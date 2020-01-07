@@ -1,40 +1,37 @@
 using System.Threading;
+
+using FakeItEasy;
+
 using NUnit.Framework;
-using Rhino.Mocks;
 
 namespace Spring.Threading
 {
     [TestFixture]
-	public class SyncHolderTest
-	{
-        private MockRepository mocks;
+    public class SyncHolderTest
+    {
         ISync sync;
 
         [SetUp]
-        public void SetUp ()
+        public void SetUp()
         {
-            mocks = new MockRepository();
-            sync = (ISync) mocks.CreateMock(typeof(ISync));            
+            sync = A.Fake<ISync>();
         }
 
         [TearDown]
-        public void TearDown ()
+        public void TearDown()
         {
-            mocks.VerifyAll();
         }
 
         class MySemaphore : Semaphore
         {
-            public MySemaphore (long initialPermits) : base (initialPermits)
-            {}
+            public MySemaphore(long initialPermits) : base(initialPermits)
+            {
+            }
         }
 
         [Test]
-        public void CanBeUsedWithTheUsingCSharpIdiomToAttemptOnAnISync ()
+        public void CanBeUsedWithTheUsingCSharpIdiomToAttemptOnAnISync()
         {
-            // no expectations
-            mocks.ReplayAll();
-
             MySemaphore sync = new MySemaphore(1);
             using (new SyncHolder(sync, 100))
             {
@@ -57,17 +54,18 @@ namespace Spring.Threading
         }
 
         [Test]
-        [ExpectedException(typeof(ThreadStateException))]
-		public void CanBeUsedWithTheUsingCSharpIdiomToAcquireAnIsync()
-		{
+        public void CanBeUsedWithTheUsingCSharpIdiomToAcquireAnIsync()
+        {
             sync.Acquire();
             sync.Release();
-            mocks.ReplayAll();
 
-            using (new SyncHolder(sync))
+            Assert.Throws<ThreadStateException>(() =>
             {
-                throw new ThreadStateException();
-            }
+                using (new SyncHolder(sync))
+                {
+                    throw new ThreadStateException();
+                }
+            });
         }
-	}
+    }
 }

@@ -1,7 +1,7 @@
 #region License
 
 /*
- * Copyright © 2002-2011 the original author or authors.
+ * Copyright ï¿½ 2002-2011 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,20 +18,15 @@
 
 #endregion
 
-#region Imports
-
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using Common.Logging;
 
 using Spring.Core;
 using Spring.Objects.Factory;
 using Spring.Objects.Factory.Config;
-using Spring.Util;
-using System.Linq;
 
-#endregion
+using System.Linq;
 
 namespace Spring.Aop.Framework.AutoProxy
 {
@@ -153,11 +148,11 @@ namespace Spring.Aop.Framework.AutoProxy
         /// </returns>
         protected IList<IAdvisor> FindEligibleAdvisors(Type targetType, string targetName)
         {
-            IList<IAdvisor> candidateAdvisors = FindCandidateAdvisors(targetType, targetName);
-            IList<IAdvisor> eligibleAdvisors = FindAdvisorsThatCanApply(candidateAdvisors, targetType, targetName);
+            List<IAdvisor> candidateAdvisors = FindCandidateAdvisors(targetType, targetName);
+            List<IAdvisor> eligibleAdvisors = FindAdvisorsThatCanApply(candidateAdvisors, targetType, targetName);
 
             ExtendAdvisors(eligibleAdvisors, targetType, targetName);
-            eligibleAdvisors = SortAdvisors(eligibleAdvisors);
+            SortAdvisors(eligibleAdvisors);
 
             return eligibleAdvisors;
         }
@@ -168,7 +163,7 @@ namespace Spring.Aop.Framework.AutoProxy
         /// <param name="targetType">the type of the object to be advised</param>
         /// <param name="targetName">the name of the object to be advised</param>
         /// <returns>the list of candidate advisors</returns>
-        protected virtual IList<IAdvisor> FindCandidateAdvisors(Type targetType, string targetName)
+        protected virtual List<IAdvisor> FindCandidateAdvisors(Type targetType, string targetName)
         {
             return _advisorRetrievalHelper.FindAdvisorObjects(targetType, targetName);
         }
@@ -181,7 +176,7 @@ namespace Spring.Aop.Framework.AutoProxy
         /// <param name="targetType">the target object's type</param>
         /// <param name="targetName">the target object's name</param>
         /// <returns>the list of applicable advisors</returns>
-        protected virtual IList<IAdvisor> FindAdvisorsThatCanApply(IList<IAdvisor> candidateAdvisors, Type targetType, string targetName)
+        protected virtual List<IAdvisor> FindAdvisorsThatCanApply(List<IAdvisor> candidateAdvisors, Type targetType, string targetName)
         {
             if (candidateAdvisors.Count==0)
             {
@@ -195,7 +190,7 @@ namespace Spring.Aop.Framework.AutoProxy
                 {
                     if (logger.IsInfoEnabled)
                     {
-                        logger.Info(string.Format("Candidate advisor [{0}] accepted for targetType [{1}]", candidate, targetType));
+                        logger.Info($"Candidate advisor [{candidate}] accepted for targetType [{targetType}]");
                     }
                     eligibleAdvisors.Add(candidate);
                 }
@@ -210,7 +205,7 @@ namespace Spring.Aop.Framework.AutoProxy
                 {
                     if (logger.IsInfoEnabled)
                     {
-                        logger.Info(string.Format("Candidate advisor [{0}] accepted for targetType [{1}]", candidate, targetType));
+                        logger.Info($"Candidate advisor [{candidate}] accepted for targetType [{targetType}]");
                     }
                     eligibleAdvisors.Add(candidate);
                 }
@@ -218,7 +213,7 @@ namespace Spring.Aop.Framework.AutoProxy
                 {
                     if (logger.IsInfoEnabled)
                     {
-                        logger.Info(string.Format("Candidate advisor [{0}] rejected for targetType [{1}]", candidate, targetType));
+                        logger.Info($"Candidate advisor [{candidate}] rejected for targetType [{targetType}]");
                     }
                 }
             }
@@ -231,20 +226,9 @@ namespace Spring.Aop.Framework.AutoProxy
         /// </summary>
         /// <param name="advisors">The advisors.</param>
         /// <returns></returns>
-        protected virtual IList<IAdvisor> SortAdvisors(IList<IAdvisor> advisors)
+        protected virtual void SortAdvisors(List<IAdvisor> advisors)
         {
-            if (advisors.Count==0)
-            {
-                return advisors;
-            }
-
-            if (advisors is List<IAdvisor>)
-                ((List<IAdvisor>)advisors).Sort(new OrderComparator<IAdvisor>());
-            else if (advisors is ArrayList)
-                ((ArrayList) advisors).Sort(new OrderComparator());
-            else if (advisors is Array)
-                Array.Sort((Array) advisors, new OrderComparator());
-            return advisors;
+            advisors.Sort(OrderComparator<IAdvisor>.Instance);
         }
 
         /// <summary>

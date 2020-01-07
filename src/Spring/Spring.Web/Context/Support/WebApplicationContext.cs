@@ -20,7 +20,6 @@
 
 using System;
 using System.Collections;
-using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
@@ -29,11 +28,8 @@ using System.Web.Hosting;
 using System.Xml;
 using Common.Logging;
 using Spring.Collections;
-using Spring.Objects;
-using Spring.Objects.Factory.Config;
 using Spring.Objects.Factory.Support;
 using Spring.Objects.Factory.Xml;
-using Spring.Objects.Support;
 using Spring.Reflection.Dynamic;
 using Spring.Util;
 using Spring.Core.IO;
@@ -156,7 +152,7 @@ namespace Spring.Context.Support
             ILog s_weblog = LogManager.GetLogger(typeof(WebApplicationContext));
 
             // register for ContextRegistry.Cleared event - we need to discard our cache in this case
-            ContextRegistry.Cleared += new EventHandler(OnContextRegistryCleared);
+            ContextRegistry.Cleared += OnContextRegistryCleared;
 
 #if !MONO_2_0
             if (HttpRuntime.AppDomainAppVirtualPath != null) // check if we're within an ASP.NET AppDomain!

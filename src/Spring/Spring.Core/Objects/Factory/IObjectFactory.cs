@@ -1,7 +1,7 @@
 #region License
 
 /*
- * Copyright © 2002-2011 the original author or authors.
+ * Copyright Â© 2002-2011 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -210,21 +210,21 @@ namespace Spring.Objects.Factory
 		/// <returns>True if an object with the given name is defined.</returns>
 		bool ContainsObject(string name);
 
-	    /// <summary>
-	    /// Return the aliases for the given object name, if defined.
-	    /// </summary>
-	    /// <remarks>
-	    /// <para>
-	    /// Will ask the parent factory if the object cannot be found in this factory
-	    /// instance.
-	    /// </para>
-	    /// </remarks>
-	    /// <param name="name">The object name to check for aliases.</param>
-	    /// <returns>The aliases, or an empty array if none.</returns>
-	    /// <exception cref="Spring.Objects.Factory.NoSuchObjectDefinitionException">
-	    /// If there's no such object definition.
-	    /// </exception>
-	    IList<string> GetAliases(string name);
+		/// <summary>
+		/// Return the aliases for the given object name, if defined.
+		/// </summary>
+		/// <remarks>
+		/// <para>
+		/// Will ask the parent factory if the object cannot be found in this factory
+		/// instance.
+		/// </para>
+		/// </remarks>
+		/// <param name="name">The object name to check for aliases.</param>
+		/// <returns>The aliases, or an empty array if none.</returns>
+		/// <exception cref="Spring.Objects.Factory.NoSuchObjectDefinitionException">
+		/// If there's no such object definition.
+		/// </exception>
+		IReadOnlyList<string> GetAliases(string name);
 
 #if !MONO
 		/// <summary>
@@ -259,6 +259,37 @@ namespace Spring.Objects.Factory
 		/// </exception>
 #endif
         object this[string name] { get; }
+
+        /// <summary>
+        /// Return an instance (possibly shared or independent) of the given object name.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This method allows an object factory to be used as a replacement for the
+        /// Singleton or Prototype design pattern.
+        /// </para>
+        /// <para>
+        /// Note that callers should retain references to returned objects. There is no
+        /// guarantee that this method will be implemented to be efficient. For example,
+        /// it may be synchronized, or may need to run an RDBMS query.
+        /// </para>
+        /// <para>
+        /// Will ask the parent factory if the object cannot be found in this factory
+        /// instance.
+        /// </para>
+        /// </remarks>
+        /// <typeparam name="T">The type of the object to return.</typeparam>
+        /// <returns>The instance of the object.</returns>
+        /// <exception cref="Spring.Objects.Factory.NoSuchObjectDefinitionException">
+        /// If there's no such object definition.
+        /// </exception>
+        /// <exception cref="Spring.Objects.Factory.ObjectDefinitionStoreException">
+        /// If there is more than a single object of the requested type defined in the factory.
+        /// </exception>
+        /// <exception cref="Spring.Objects.ObjectsException">
+        /// If the object could not be created.
+        /// </exception>
+        T GetObject<T>();
 
 		/// <summary>
 		/// Return an instance (possibly shared or independent) of the given object name.

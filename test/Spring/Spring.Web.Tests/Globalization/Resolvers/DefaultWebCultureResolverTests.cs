@@ -20,10 +20,8 @@
 
 #region Imports
 
-using System;
 using System.Globalization;
 using NUnit.Framework;
-using Rhino.Mocks;
 
 #endregion
 
@@ -63,14 +61,14 @@ namespace Spring.Globalization.Resolvers
 
         private readonly CultureInfo EXPECTED_NEUTRALCULTURE = new CultureInfo("fr");
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             // ensure, uiCulture and culture are set to different cultures
             CultureTestScope.Set();
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             CultureTestScope.Reset();

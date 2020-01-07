@@ -24,7 +24,7 @@ using System;
 using System.Diagnostics;
 using System.Reflection;
 using System.Security;
-using System.Security.Permissions;
+
 using NUnit.Framework;
 using Spring.Context.Support;
 
@@ -75,7 +75,7 @@ namespace Spring.Reflection.Dynamic
             ieee.Officers["advisors"] = new Inventor[] { tesla, pupin }; // not historically accurate, but I need an array in the map ;-)
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TearDown()
         {
             //DynamicReflectionManager.SaveAssembly();
@@ -104,12 +104,11 @@ namespace Spring.Reflection.Dynamic
         }
 
         [Test]
-        [ExpectedException( typeof( InvalidOperationException ) )]
         public void TestAttemptingToSetFieldOfValueTypeInstance()
         {
             MyStruct myYearHolder = new MyStruct();
             IDynamicField year = Create( typeof( MyStruct ).GetField( "year" ) );
-            year.SetValue( myYearHolder, 2004 );
+            Assert.Throws<InvalidOperationException>(() => year.SetValue( myYearHolder, 2004 ));
         }
 
         [Test]
@@ -145,6 +144,7 @@ namespace Spring.Reflection.Dynamic
             Assert.AreEqual(u1, u2);
         }
 
+#if !NETCOREAPP
         [Test, Ignore("TODO: this works as expected when run using TD.NET & R# (in VS2k8), but fails with nant/NET 2.0 ?!?")]
         public void CannotReadPrivateReadOnlyFieldIfNoReflectionPermission()
         {
@@ -162,6 +162,7 @@ namespace Spring.Reflection.Dynamic
                 Assert.IsTrue( sex.Message.IndexOf("ReflectionPermission") > -1 );
             }
         }
+#endif
 
         [Test]
         public void CannotSetStaticReadOnlyField()

@@ -19,11 +19,7 @@
 #endregion
 
 using System;
-using System.Globalization;
-using System.Collections;
 using System.Collections.Specialized;
-
-using Spring.Util;
 
 namespace Spring.Objects.Factory.Config
 {
@@ -38,7 +34,7 @@ namespace Spring.Objects.Factory.Config
     [Serializable]
     public class ConfigurableVariableSource : IVariableSource
     {
-        protected NameValueCollection _variables;
+        private NameValueCollection _variables;
 
         /// <summary>
         /// Initializes a new instance of <see cref="ConfigurableVariableSource"/>.

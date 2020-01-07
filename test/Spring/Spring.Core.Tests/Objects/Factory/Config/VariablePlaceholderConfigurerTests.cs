@@ -20,19 +20,27 @@
 
 using System;
 using System.Collections;
+
+using FakeItEasy;
+
 using NUnit.Framework;
+
 using Spring.Context.Support;
 using Spring.Objects.Factory.Support;
 
 namespace Spring.Objects.Factory.Config
 {
     /// <summary>
-    /// This class contains tests for 
+    /// This class contains tests for
     /// </summary>
     /// <author>Mark Pollack</author>
     [TestFixture]
     public class VariablePlaceholderConfigurerTests
     {
+        [SetUp]
+        public void SetUp()
+        {
+        }
 
         [Test]
         public void ThrowsOnMissingVariableSources()
@@ -57,7 +65,7 @@ namespace Spring.Objects.Factory.Config
             StaticApplicationContext ac = new StaticApplicationContext();
             VariablePlaceholderConfigurer vphc = new VariablePlaceholderConfigurer();
             vphc.VariableSources = new ArrayList(new object[] { new object() });
-            
+
             try
             {
                 vphc.PostProcessObjectFactory(ac.ObjectFactory);
@@ -275,6 +283,30 @@ namespace Spring.Objects.Factory.Config
             TestObject tb1 = (TestObject)ac.GetObject("tb1");
             Assert.AreEqual("Erich", tb1.Name);
             Assert.AreEqual("${nickname}", tb1.Nickname);
+        }
+
+        [Test]
+        public void InlcludeAncestors()
+        {
+            const string defName = "foo";
+            const string placeholder = "${name}";
+            MutablePropertyValues pvs = new MutablePropertyValues();
+
+
+            const string theProperty = "name";
+            pvs.Add(theProperty, placeholder);
+            RootObjectDefinition def = new RootObjectDefinition(typeof(TestObject), pvs);
+
+            IConfigurableListableObjectFactory mock = A.Fake<IConfigurableListableObjectFactory>();
+            A.CallTo(() => mock.GetObjectDefinitionNames(true)).Returns(new string[] { defName });
+            A.CallTo(() => mock.GetObjectDefinition(defName, true)).Returns(def);
+
+            VariablePlaceholderConfigurer vpc = new VariablePlaceholderConfigurer();
+            vpc.IgnoreUnresolvablePlaceholders = true;
+            vpc.VariableSource = new DictionaryVariableSource(new string[] { "name", "Erich" });
+            vpc.IncludeAncestors = true;
+
+            vpc.PostProcessObjectFactory(mock);
         }
     }
 }

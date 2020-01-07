@@ -18,17 +18,15 @@
 
 #endregion
 
-#region Imports
-
 using System;
 using System.Reflection;
-using Rhino.Mocks;
+
+using FakeItEasy;
+
 using NUnit.Framework;
 using Spring.Context;
 using Spring.Validation;
 using Spring.Validation.Actions;
-
-#endregion
 
 namespace Spring.Aspects.Validation
 {
@@ -42,13 +40,11 @@ namespace Spring.Aspects.Validation
         private IApplicationContext mockContext;
         private ParameterValidationAdvice advice;
         private RequiredValidator requiredValidator;
-        private MockRepository mocks;
 
         [SetUp]
         public void SetUp()
         {
-            mocks = new MockRepository();
-            mockContext = mocks.CreateMock<IApplicationContext>();
+            mockContext = A.Fake<IApplicationContext>();
 
             advice = new ParameterValidationAdvice();
             advice.ApplicationContext = mockContext;
@@ -65,45 +61,27 @@ namespace Spring.Aspects.Validation
             ValidationTarget target = new ValidationTarget();
             object[] args = new object[] {inventor};
 
-            using (mocks.Record())
-            {
-                ExpectValidatorRetrieval("required", requiredValidator);
-            }
+            ExpectValidatorRetrieval("required", requiredValidator);
 
-            using (mocks.Playback())
-            {
-                advice.Before(method, args, target);
-                method.Invoke(target, args);
-                Assert.AreEqual("NIKOLA TESLA", inventor.Name);
-            }
-
+            advice.Before(method, args, target);
+            method.Invoke(target, args);
+            Assert.AreEqual("NIKOLA TESLA", inventor.Name);
         }
 
         [Test]
-        [ExpectedException(typeof(ValidationException))]
         public void TestInvalidArgument()
         {
             MethodInfo method = typeof(ValidationTarget).GetMethod("Save");
 
-            using (mocks.Record())
-            {
-                ExpectValidatorRetrieval("required", requiredValidator);
-            }
+            ExpectValidatorRetrieval("required", requiredValidator);
 
-            using (mocks.Playback())
-            {
-                advice.Before(method, new object[] { null }, new ValidationTarget());
-            }            
+            Assert.Throws<ValidationException>(() => advice.Before(method, new object[] {null}, new ValidationTarget()));
         }
-
-        #region Helper methods
 
         private void ExpectValidatorRetrieval(string validatorName, IValidator validator)
         {
-            Expect.Call(mockContext.GetObject(validatorName)).Return(validator);
+            A.CallTo(() => mockContext.GetObject(validatorName)).Returns(validator).Once();
         }
-
-        #endregion
     }
 
     #region Inner Class : ValidationTarget

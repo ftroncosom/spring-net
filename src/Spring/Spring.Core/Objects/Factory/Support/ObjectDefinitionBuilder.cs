@@ -1,5 +1,3 @@
-#region License
-
 /*
  * Copyright 2002-2010 the original author or authors.
  *
@@ -16,14 +14,9 @@
  * limitations under the License.
  */
 
-#endregion
-
-#region Imports
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using Spring.Objects.Factory.Config;
-#endregion
 
 namespace Spring.Objects.Factory.Support
 {
@@ -39,16 +32,11 @@ namespace Spring.Objects.Factory.Support
     /// <author>Mark Pollack (.NET)</author>
     public class ObjectDefinitionBuilder
     {
-        #region Fields
         private AbstractObjectDefinition objectDefinition;
 
         private IObjectDefinitionFactory objectDefinitionFactory;
 
         private int constructorArgIndex;
-
-        #endregion
-
-        #region Constructor(s)
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ObjectDefinitionBuilder"/> class, private
@@ -57,10 +45,6 @@ namespace Spring.Objects.Factory.Support
         private ObjectDefinitionBuilder()
         {
         }
-
-        #endregion
-
-        #region Factory Methods
 
         /// <summary>
         /// Creates a new <see cref="ObjectDefinitionBuilder"/> used to construct a <see cref="Spring.Objects.Factory.Support.GenericObjectDefinition"/>.
@@ -186,10 +170,6 @@ namespace Spring.Objects.Factory.Support
             return builder;
         }
 
-        #endregion 
-
-
-        #region Properties
 
         /// <summary>
         /// Gets the current object definition in its raw (unvalidated) form.
@@ -215,9 +195,6 @@ namespace Spring.Objects.Factory.Support
         }
 
 
-        #endregion
-
-        #region Methods
         //TODO add expression support.
 
         /// <summary>
@@ -337,6 +314,28 @@ namespace Spring.Objects.Factory.Support
         }
 
         /// <summary>
+        /// Sets the autowire candidate value for this definition.
+        /// </summary>
+        /// <param name="autowireCandidate">The autowire candidate value</param>
+        /// <returns></returns>
+        public ObjectDefinitionBuilder SetAutowireCandidate(bool autowireCandidate)
+        {
+            objectDefinition.IsAutowireCandidate = autowireCandidate;
+            return this;
+        }
+
+        /// <summary>
+        /// Sets the primary value for this definition.
+        /// </summary>
+        /// <param name="primary">If object is primary</param>
+        /// <returns></returns>
+        public ObjectDefinitionBuilder SetPrimary(bool primary)
+        {
+            objectDefinition.IsPrimary = primary;
+            return this;
+        }
+
+        /// <summary>
         /// Sets the dependency check mode for this definition.
         /// </summary>
         /// <param name="dependencyCheck">The dependency check.</param>
@@ -390,18 +389,16 @@ namespace Spring.Objects.Factory.Support
         {
             if (objectDefinition.DependsOn == null)
             {
-                objectDefinition.DependsOn = new string[] {objectName};
+                objectDefinition.DependsOn = new[] {objectName};
             }
             else
             {
-                List<string> arrayList = new List<string>();
-                arrayList.AddRange(objectDefinition.DependsOn);
-                arrayList.AddRange(new string[]{ objectName});
-                objectDefinition.DependsOn = arrayList;
+                var list = new List<string>(objectDefinition.DependsOn.Count + 1);
+                list.AddRange(objectDefinition.DependsOn);
+                list.Add(objectName);
+                objectDefinition.DependsOn = list;
             }
             return this;
         }
-
-        #endregion
     }
 }

@@ -36,6 +36,7 @@ namespace Spring.DataBinding
             public Nullable<short> SortOrder { get { return sortOrder; } set { sortOrder = value; } }
         }
 
+#if !NETCOREAPP
         [Test(Description="http://jira.springframework.org/browse/SPRNET-996")]
         public void BindToNullable()
         {
@@ -45,40 +46,36 @@ namespace Spring.DataBinding
             new SimpleExpressionBinding("Text", "SortOrder").BindSourceToTarget(textBox, entity, null);
             Assert.IsNull(entity.SortOrder);
         }
+#endif
 
         [Test]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void WithNullMessageId()
         {
-            new SimpleExpressionBinding("exp", "exp").SetErrorMessage(null, "errors");
+            Assert.Throws<ArgumentNullException>(() => new SimpleExpressionBinding("exp", "exp").SetErrorMessage(null, "errors"));
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void WithEmptyMessageId()
         {
-            new SimpleExpressionBinding("exp", "exp").SetErrorMessage("", "errors");
+            Assert.Throws<ArgumentNullException>(() => new SimpleExpressionBinding("exp", "exp").SetErrorMessage("", "errors"));
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void WithWhitespaceMessageId()
         {
-            new SimpleExpressionBinding("exp", "exp").SetErrorMessage("\t   ", "errors");
+            Assert.Throws<ArgumentNullException>(() => new SimpleExpressionBinding("exp", "exp").SetErrorMessage("\t   ", "errors"));
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentException))]
         public void WithNullProviders()
         {
-            new SimpleExpressionBinding("exp", "exp").SetErrorMessage("error", null);
+            Assert.Throws<ArgumentException>(() => new SimpleExpressionBinding("exp", "exp").SetErrorMessage("error", null));
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentException))]
         public void WithEmptyProviders()
         {
-            new SimpleExpressionBinding("exp", "exp").SetErrorMessage("error", new string[0]);
+            Assert.Throws<ArgumentException>(() => new SimpleExpressionBinding("exp", "exp").SetErrorMessage("error", new string[0]));
         }
     }
 }

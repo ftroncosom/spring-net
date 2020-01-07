@@ -19,15 +19,20 @@
 #endregion
 
 using System;
-using System.Collections;
-using System.Messaging;
-using Common.Logging;
+
 using Spring.Context;
-using Spring.Messaging.Support;
 using Spring.Messaging.Support.Converters;
 using Spring.Objects.Factory;
-using Spring.Objects.Factory.Config;
 using Spring.Util;
+
+using Common.Logging;
+
+#if NETSTANDARD
+using Experimental.System.Messaging;
+#else
+using System.Messaging;
+#endif
+
 
 namespace Spring.Messaging.Core
 {
@@ -62,7 +67,7 @@ namespace Spring.Messaging.Core
     /// </para>
     /// <para>The overloaded ConvertAndSend and ReceiveAndConvert methods inherit the transactional
     /// semantics of the previously described Send method but more importantly, they help to ensure
-    /// that thread safe access to <see cref="System.Messaging.IMessageFormatter"/> instances are
+    /// that thread safe access to <see cref="IMessageFormatter"/> instances are
     /// used as well as providing additional central location to put programmic logic that translates
     /// between the MSMQ Message object and the your business objects.  This for example is useful if you
     /// need to perform additional translation operations after calling a IMessageFormatter instance or
@@ -83,12 +88,15 @@ namespace Spring.Messaging.Core
         private string messageConverterObjectName;
 
         private IMessageQueueFactory messageQueueFactory;
-        protected IConfigurableApplicationContext applicationContext;
+        private IConfigurableApplicationContext applicationContext;
 
         private TimeSpan timeout = MessageQueue.InfiniteTimeout;
 
         private MessageQueueMetadataCache metadataCache;
 
+        /// <summary>
+        /// The name that is used from cache registration inside the application context.
+        /// </summary>
         public const string METADATA_CACHE_NAME = "__MessageQueueMetadataCache__";
 
         #endregion
@@ -246,7 +254,7 @@ namespace Spring.Messaging.Core
             get { return applicationContext; }
             set {
                 AssertUtils.ArgumentNotNull(value, "An ApplicationContext instance is required");
-                IConfigurableApplicationContext ctx = value as IConfigurableApplicationContext;
+                var ctx = value as IConfigurableApplicationContext;
                 if (ctx == null)
                 {
                     throw new InvalidOperationException(
@@ -292,6 +300,9 @@ namespace Spring.Messaging.Core
             CreateDefaultMetadataCache();
         }
 
+        /// <summary>
+        /// Constructs the metadata cache with default options.
+        /// </summary>
         protected virtual void CreateDefaultMetadataCache()
         {
             if (metadataCache == null)

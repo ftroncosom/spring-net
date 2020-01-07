@@ -22,8 +22,9 @@
 
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
-using Rhino.Mocks;
+
 using Spring.Objects.Factory.Config;
 using Spring.Objects.Factory.Support;
 using Spring.Objects.Factory.Xml;
@@ -46,12 +47,9 @@ namespace Spring.Objects.Factory
         [SetUp]
         public void SetUp()
         {
-            IObjectFactory grandparent
-                = new XmlObjectFactory(new ReadOnlyXmlTestResource("root.xml", GetType()));
-            IObjectFactory parent
-                = new XmlObjectFactory(new ReadOnlyXmlTestResource("middle.xml", GetType()), grandparent);
-            IConfigurableListableObjectFactory child
-                = new XmlObjectFactory(new ReadOnlyXmlTestResource("leaf.xml", GetType()), parent);
+            IObjectFactory grandparent = new XmlObjectFactory(new ReadOnlyXmlTestResource("root.xml", GetType()));
+            IObjectFactory parent = new XmlObjectFactory(new ReadOnlyXmlTestResource("middle.xml", GetType()), grandparent);
+            IConfigurableListableObjectFactory child = new XmlObjectFactory(new ReadOnlyXmlTestResource("leaf.xml", GetType()), parent);
             _factory = child;
         }
 
@@ -71,14 +69,14 @@ namespace Spring.Objects.Factory
         [Test]
         public void ObjectNamesIncludingAncestors()
         {
-            IList<string> names = ObjectFactoryUtils.ObjectNamesIncludingAncestors(_factory);
+            var names = ObjectFactoryUtils.ObjectNamesIncludingAncestors(_factory);
             Assert.AreEqual(6, names.Count);
         }
 
         [Test]
         public void ObjectNamesForTypeIncludingAncestors()
         {
-            IList<string> names = ObjectFactoryUtils.ObjectNamesForTypeIncludingAncestors(_factory, typeof(ITestObject));
+            var names = ObjectFactoryUtils.ObjectNamesForTypeIncludingAncestors(_factory, typeof(ITestObject));
             // includes 2 TestObjects from IFactoryObjects (DummyFactory definitions)
             Assert.AreEqual(4, names.Count);
             Assert.IsTrue(names.Contains("test"));
@@ -95,7 +93,7 @@ namespace Spring.Objects.Factory
             DefaultListableObjectFactory child = new DefaultListableObjectFactory(root);
             child.RegisterObjectDefinition("excludeLocalObject", new RootObjectDefinition(typeof(Hashtable)));
 
-            IList<string> names = ObjectFactoryUtils.ObjectNamesForTypeIncludingAncestors(child, typeof(ArrayList));
+            var names = ObjectFactoryUtils.ObjectNamesForTypeIncludingAncestors(child, typeof(ArrayList));
             // "excludeLocalObject" matches on the parent, but not the local object definition
             Assert.AreEqual(0, names.Count);
 
@@ -150,11 +148,11 @@ namespace Spring.Objects.Factory
         }
 
         [Test]
-        [ExpectedException(typeof(NoSuchObjectDefinitionException),
-            ExpectedMessage = "No unique object of type [Spring.Objects.ITestObject] is defined : Expected single object but found 4")]
         public void ObjectOfTypeIncludingAncestorsWithMoreThanOneObjectOfType()
         {
-            ObjectFactoryUtils.ObjectOfTypeIncludingAncestors(_factory, typeof(ITestObject), true, true);
+            Assert.Throws<NoSuchObjectDefinitionException>(
+                () => ObjectFactoryUtils.ObjectOfTypeIncludingAncestors(_factory, typeof(ITestObject), true, true),
+                "No unique object of type [Spring.Objects.ITestObject] is defined : Expected single object but found 4");
         }
 
         [Test]

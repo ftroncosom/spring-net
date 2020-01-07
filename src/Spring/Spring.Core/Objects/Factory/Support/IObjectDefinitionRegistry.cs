@@ -1,7 +1,7 @@
 #region License
 
 /*
- * Copyright © 2002-2011 the original author or authors.
+ * Copyright Â© 2002-2011 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,14 +18,9 @@
 
 #endregion
 
-#region Imports
-
 using System.Collections.Generic;
 
-using Spring.Objects.Factory;
 using Spring.Objects.Factory.Config;
-
-#endregion
 
 namespace Spring.Objects.Factory.Support
 {
@@ -53,16 +48,13 @@ namespace Spring.Objects.Factory.Support
         /// </summary>
 	    bool IsObjectNameInUse(string objectName);
 
-        /// <summary>
-        /// Return the number of objects defined in the registry.
-        /// </summary>
-        /// <value>
-        /// The number of objects defined in the registry.
-        /// </value>
-        int ObjectDefinitionCount
-        {
-            get;
-        }
+	    /// <summary>
+	    /// Return the number of objects defined in the registry.
+	    /// </summary>
+	    /// <value>
+	    /// The number of objects defined in the registry.
+	    /// </value>
+	    int ObjectDefinitionCount { get; }
 		
         /// <summary>
         /// Return the names of all objects defined in this registry.
@@ -71,8 +63,19 @@ namespace Spring.Objects.Factory.Support
         /// The names of all objects defined in this registry, or an empty array
         /// if none defined
         /// </returns>
-        IList<string> GetObjectDefinitionNames ();
-		
+        IReadOnlyList<string> GetObjectDefinitionNames();
+
+        /// <summary>
+        /// Return the names of all objects defined in this registry.
+        /// If <code>includeAncestors</code> is <code>true</code> it includes all objects in the defined parent factories.
+        /// </summary>
+        /// <param name="includeAncestors">to include parent factories in result</param>
+        /// <returns>
+        /// The names of all objects defined in this registry, if <code>includeAncestors</code> is <code>true</code> it includes
+        /// all objects in the defined parent factories, or an empty array if none defined
+        /// </returns>
+        IReadOnlyList<string> GetObjectDefinitionNames(bool includeAncestors);
+
         /// <summary>
         /// Check if this registry contains a object definition with the given name.
         /// </summary>
@@ -146,7 +149,7 @@ namespace Spring.Objects.Factory.Support
 	    /// <exception cref="Spring.Objects.Factory.NoSuchObjectDefinitionException">
 	    /// If there's no such object definition.
 	    /// </exception>
-	    IList<string> GetAliases (string name);
+	    IReadOnlyList<string> GetAliases (string name);
 		
         /// <summary>
         /// Given a object name, create an alias. We typically use this method to

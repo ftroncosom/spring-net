@@ -22,9 +22,11 @@
 
 using System;
 using System.Reflection;
+#if !NETCOREAPP
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Messaging;
 using System.Runtime.Remoting.Proxies;
+#endif
 using NUnit.Framework;
 using Spring.Objects;
 
@@ -40,10 +42,9 @@ namespace Spring.Util
     public sealed class AssertUtilsTests
     {
         [Test]
-        [ExpectedException(typeof(ArgumentException), ExpectedMessage = "foo")]
         public void IsTrueWithMesssage()
         {
-            AssertUtils.IsTrue(false, "foo");
+            Assert.Throws<ArgumentException>(() => AssertUtils.IsTrue(false, "foo"), "foo");
         }
 
         [Test]
@@ -53,10 +54,9 @@ namespace Spring.Util
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentException), ExpectedMessage = "[Assertion failed] - this expression must be true")]
         public void IsTrue()
         {
-            AssertUtils.IsTrue(false);
+            Assert.Throws<ArgumentException>(() => AssertUtils.IsTrue(false), "[Assertion failed] - this expression must be true");
         }
 
         [Test]
@@ -66,24 +66,21 @@ namespace Spring.Util
         }
 
         [Test]
-        [ExpectedException(typeof(InvalidOperationException))]
         public void StateTrue()
         {
-            AssertUtils.State(false, "foo");
+            Assert.Throws<InvalidOperationException>(() => AssertUtils.State(false, "foo"));
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void ArgumentNotNull()
         {
-            AssertUtils.ArgumentNotNull(null, "foo");
+            Assert.Throws<ArgumentNullException>(() => AssertUtils.ArgumentNotNull(null, "foo"));
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void ArgumentNotNullWithMessage()
         {
-            AssertUtils.ArgumentNotNull(null, "foo", "Bang!");
+            Assert.Throws<ArgumentNullException>(() => AssertUtils.ArgumentNotNull(null, "foo", "Bang!"));
         }
 
         [Test]
@@ -99,45 +96,39 @@ namespace Spring.Util
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void ArgumentHasText()
         {
-            AssertUtils.ArgumentHasText(null, "foo");
+            Assert.Throws<ArgumentNullException>(() => AssertUtils.ArgumentHasText(null, "foo"));
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void ArgumentHasTextWithMessage()
         {
-            AssertUtils.ArgumentHasText(null, "foo", "Bang!");
+            Assert.Throws<ArgumentNullException>(() => AssertUtils.ArgumentHasText(null, "foo", "Bang!"));
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void ArgumentHasLengthArgumentIsNull()
         {
-            AssertUtils.ArgumentHasLength(null, "foo");
+            Assert.Throws<ArgumentNullException>(() => AssertUtils.ArgumentHasLength(null, "foo"));
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void ArgumentHasLengthArgumentIsNullWithMessage()
         {
-            AssertUtils.ArgumentHasLength(null, "foo", "Bang!");
+            Assert.Throws<ArgumentNullException>(() => AssertUtils.ArgumentHasLength(null, "foo", "Bang!"));
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void ArgumentHasLengthArgumentIsEmpty()
         {
-            AssertUtils.ArgumentHasLength(new byte[0], "foo");
+            Assert.Throws<ArgumentNullException>(() => AssertUtils.ArgumentHasLength(new byte[0], "foo"));
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void ArgumentHasLengthArgumentIsEmptyWithMessage()
         {
-            AssertUtils.ArgumentHasLength(new byte[0], "foo", "Bang!");
+            Assert.Throws<ArgumentNullException>(() => AssertUtils.ArgumentHasLength(new byte[0], "foo", "Bang!"));
         }
 
         [Test]
@@ -153,24 +144,21 @@ namespace Spring.Util
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentException))]
         public void ArgumentHasElementsArgumentIsNull()
         {
-            AssertUtils.ArgumentHasElements(null, "foo");
+            Assert.Throws<ArgumentException>(() => AssertUtils.ArgumentHasElements(null, "foo"));
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentException))]
         public void ArgumentHasElementsArgumentIsEmpty()
         {
-            AssertUtils.ArgumentHasElements(new object[0], "foo");
+            Assert.Throws<ArgumentException>(() => AssertUtils.ArgumentHasElements(new object[0], "foo"));
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentException))]
         public void ArgumentHasElementsArgumentContainsNull()
         {
-            AssertUtils.ArgumentHasElements(new object[] { new object(), null, new object() }, "foo");
+            Assert.Throws<ArgumentException>(() => AssertUtils.ArgumentHasElements(new object[] { new object(), null, new object() }, "foo"));
         }
 
         [Test]
@@ -189,28 +177,6 @@ namespace Spring.Util
             AssertNotUnderstandsType(null, "target", typeof(object), typeof(NotSupportedException), "Target 'target' is null.");
             // any target, null type
             AssertNotUnderstandsType(new object(), "target", null, typeof(ArgumentNullException), "Argument 'requiredType' cannot be null.");
-        }
-
-        [Test]
-        public void UnderstandsMethod()
-        {
-            MethodInfo getDescriptionMethod = typeof(ITestObject).GetMethod("GetDescription", new Type[0]);
-            MethodInfo understandsMethod = typeof(AssertUtils).GetMethod("Understands", BindingFlags.Public|BindingFlags.Static, null, new Type[] {typeof (object), typeof(string), typeof (MethodBase)}, null);
-
-            // null target, static method
-            AssertUtils.Understands(null, "target", understandsMethod);
-            // null target, instance method
-            AssertNotUnderstandsMethod(null, "target", getDescriptionMethod, typeof(NotSupportedException), "Target 'target' is null and target method 'Spring.Objects.ITestObject.GetDescription' is not static.");
-            // compatible target, instance method
-            AssertUtils.Understands(new TestObject(), "target", getDescriptionMethod);
-            // incompatible target, instance method
-                AssertNotUnderstandsMethod(new object(), "target", getDescriptionMethod, typeof(NotSupportedException), "Target 'target' of type 'System.Object' does not support methods of 'Spring.Objects.ITestObject'.");
-            // compatible transparent proxy, instance method
-            object compatibleProxy = new TestProxy(new TestObject()).GetTransparentProxy();
-            AssertUtils.Understands(compatibleProxy, "compatibleProxy", getDescriptionMethod);
-            // incompatible transparent proxy, instance method
-            object incompatibleProxy = new TestProxy(new object()).GetTransparentProxy();
-            AssertNotUnderstandsMethod(incompatibleProxy, "incompatibleProxy", getDescriptionMethod, typeof(NotSupportedException), "Target 'incompatibleProxy' is a transparent proxy that does not support methods of 'Spring.Objects.ITestObject'.");
         }
 
         private void AssertNotUnderstandsType(object target, string targetName, Type requiredType, Type exceptionType, string partialMessage)
@@ -232,6 +198,29 @@ namespace Spring.Util
                     Assert.Fail("Expected Message '{0}', but got '{1}'", partialMessage, ex.Message);
                 }
             }
+        }
+
+#if !NETCOREAPP
+        [Test]
+        public void UnderstandsMethod()
+        {
+            MethodInfo getDescriptionMethod = typeof(ITestObject).GetMethod("GetDescription", new Type[0]);
+            MethodInfo understandsMethod = typeof(AssertUtils).GetMethod("Understands", BindingFlags.Public|BindingFlags.Static, null, new Type[] {typeof (object), typeof(string), typeof (MethodBase)}, null);
+
+            // null target, static method
+            AssertUtils.Understands(null, "target", understandsMethod);
+            // null target, instance method
+            AssertNotUnderstandsMethod(null, "target", getDescriptionMethod, typeof(NotSupportedException), "Target 'target' is null and target method 'Spring.Objects.ITestObject.GetDescription' is not static.");
+            // compatible target, instance method
+            AssertUtils.Understands(new TestObject(), "target", getDescriptionMethod);
+            // incompatible target, instance method
+                AssertNotUnderstandsMethod(new object(), "target", getDescriptionMethod, typeof(NotSupportedException), "Target 'target' of type 'System.Object' does not support methods of 'Spring.Objects.ITestObject'.");
+            // compatible transparent proxy, instance method
+            object compatibleProxy = new TestProxy(new TestObject()).GetTransparentProxy();
+            AssertUtils.Understands(compatibleProxy, "compatibleProxy", getDescriptionMethod);
+            // incompatible transparent proxy, instance method
+            object incompatibleProxy = new TestProxy(new object()).GetTransparentProxy();
+            AssertNotUnderstandsMethod(incompatibleProxy, "incompatibleProxy", getDescriptionMethod, typeof(NotSupportedException), "Target 'incompatibleProxy' is a transparent proxy that does not support methods of 'Spring.Objects.ITestObject'.");
         }
 
         private void AssertNotUnderstandsMethod(object target, string targetName, MethodBase method, Type exceptionType, string partialMessage)
@@ -283,5 +272,6 @@ namespace Spring.Util
                 set { throw new System.NotSupportedException(); }
             }
         }
+#endif
     }
 }

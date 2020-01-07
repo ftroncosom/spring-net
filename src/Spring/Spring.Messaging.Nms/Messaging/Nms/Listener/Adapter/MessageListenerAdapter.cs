@@ -20,7 +20,6 @@
 
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using Common.Logging;
@@ -29,7 +28,6 @@ using Spring.Messaging.Nms.Core;
 using Spring.Messaging.Nms.Support;
 using Spring.Messaging.Nms.Support.Converter;
 using Spring.Messaging.Nms.Support.Destinations;
-using Spring.Messaging.Nms.Listener;
 using Spring.Util;
 using Apache.NMS;
 
@@ -481,7 +479,7 @@ namespace Spring.Messaging.Nms.Listener.Adapter
 	    /// </para>
         /// </remarks>
         /// <param name="request">The original incoming message.</param>
-        /// <param name="response">Tthe outgoing message about to be sent.</param>
+        /// <param name="response">The outgoing message about to be sent.</param>
         /// <param name="session">The session to operate on.</param>
         /// <returns>the response destination (never <code>null</code>)</returns>
         /// <exception cref="NMSException">if thrown by NMS API methods</exception>

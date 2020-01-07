@@ -1,7 +1,7 @@
 #region License
 
 /*
- * Copyright © 2002-2011 the original author or authors.
+ * Copyright ï¿½ 2002-2011 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,11 @@
 
 #endregion
 
-#region Imports
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Common.Logging;
 using Common.Logging.Simple;
@@ -34,8 +33,6 @@ using Spring.Expressions;
 using Spring.Objects.Factory.Config;
 using Spring.Objects.Factory.Support;
 using Spring.Util;
-
-#endregion
 
 namespace Spring.Objects.Factory.Xml
 {
@@ -49,7 +46,7 @@ namespace Spring.Objects.Factory.Xml
         /// <summary>
         /// The setup logic executed before the execution of this test fixture.
         /// </summary>
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void FixtureSetUp()
         {
             // enable (null appender) logging, to ensure that the logging code is exercised...
@@ -199,12 +196,12 @@ namespace Spring.Objects.Factory.Xml
         {
             IResource resource = new ReadOnlyXmlTestResource("collections.xml", GetType());
             XmlObjectFactory xof = new XmlObjectFactory(resource);
-            IList<string> objectNames = xof.GetObjectDefinitionNames();
+            var objectNames = xof.GetObjectDefinitionNames();
             TestObject tb1 = (TestObject) xof.GetObject("aliased");
             TestObject alias1 = (TestObject) xof.GetObject("myalias");
             Assert.IsTrue(tb1 == alias1);
 
-            IList<string> tb1Aliases = xof.GetAliases("aliased");
+            var tb1Aliases = xof.GetAliases("aliased");
             Assert.AreEqual(1, tb1Aliases.Count);
             Assert.IsTrue(tb1Aliases.Contains("myalias"));
             Assert.IsTrue(objectNames.Contains("aliased"));
@@ -215,7 +212,7 @@ namespace Spring.Objects.Factory.Xml
             TestObject alias3 = (TestObject) xof.GetObject("alias2");
             Assert.IsTrue(tb2 == alias2);
             Assert.IsTrue(tb2 == alias3);
-            IList<string> tb2Aliases = xof.GetAliases("multiAliased");
+            var tb2Aliases = xof.GetAliases("multiAliased");
             Assert.AreEqual(2, tb2Aliases.Count);
             Assert.IsTrue(tb2Aliases.Contains("alias1"));
             Assert.IsTrue(tb2Aliases.Contains("alias2"));
@@ -229,7 +226,7 @@ namespace Spring.Objects.Factory.Xml
             Assert.IsTrue(tb3 == alias4);
             Assert.IsTrue(tb3 == alias5);
 
-            IList<string> tb3Aliases = xof.GetAliases("aliasWithoutId1");
+            var tb3Aliases = xof.GetAliases("aliasWithoutId1");
             Assert.AreEqual(2, tb2Aliases.Count);
             Assert.IsTrue(tb3Aliases.Contains("aliasWithoutId2"));
             Assert.IsTrue(tb3Aliases.Contains("aliasWithoutId3"));
@@ -530,10 +527,9 @@ namespace Spring.Objects.Factory.Xml
         }
 
         [Test]
-        [ExpectedException(typeof (ObjectDefinitionStoreException))]
         public void GetDictionaryThatDoesntSpecifyAnyKeyForAnEntry()
         {
-            new StreamHelperDecorator(new StreamHelperCallback(_GetDictionaryThatDoesntSpecifyAnyKeyForAnEntry)).Run();
+            Assert.Throws<ObjectDefinitionStoreException>(() => new StreamHelperDecorator(new StreamHelperCallback(_GetDictionaryThatDoesntSpecifyAnyKeyForAnEntry)).Run());
         }
 
         private void _GetDictionaryThatDoesntSpecifyAnyKeyForAnEntry(out Stream stream)
@@ -667,7 +663,6 @@ namespace Spring.Objects.Factory.Xml
             IResource resource = new ReadOnlyXmlTestResource("collections.xml", GetType());
             XmlObjectFactory xof = new XmlObjectFactory(resource);
             IDictionary map = (IDictionary) xof.GetObject("mapFactory");
-            Assert.IsTrue(map is Hashtable);
             Assert.IsTrue(map.Count == 2);
             Assert.AreEqual("bar", map["foo"]);
             Assert.AreEqual("jenny", map["jen"]);
@@ -679,7 +674,6 @@ namespace Spring.Objects.Factory.Xml
             IResource resource = new ReadOnlyXmlTestResource("collections.xml", GetType());
             XmlObjectFactory xof = new XmlObjectFactory(resource);
             IDictionary map = (IDictionary) xof.GetObject("pMapFactory");
-            Assert.IsTrue(map is Hashtable);
             Assert.IsTrue(map.Count == 2);
             Assert.AreEqual("bar", map["foo"]);
             Assert.AreEqual("jenny", map["jen"]);

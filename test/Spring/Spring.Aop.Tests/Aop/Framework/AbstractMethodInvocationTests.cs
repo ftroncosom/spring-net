@@ -18,18 +18,16 @@
 
 #endregion
 
-#region Imports
-
 using System;
 using System.Collections;
 using System.Globalization;
 using System.Reflection;
 
 using AopAlliance.Intercept;
-using NUnit.Framework;
-using Rhino.Mocks;
 
-#endregion
+using FakeItEasy;
+
+using NUnit.Framework;
 
 namespace Spring.Aop.Framework
 {
@@ -41,30 +39,25 @@ namespace Spring.Aop.Framework
 	[TestFixture]
 	public abstract class AbstractMethodInvocationTests
 	{
-	    private MockRepository mocks;
-
         [SetUp]
         public virtual void SetUp()
         {
-            mocks = new MockRepository();
         }
 
 	    protected abstract AbstractMethodInvocation CreateMethodInvocation(
-            object proxy, object target, MethodInfo method, MethodInfo onProxyMethod, 
+            object proxy, object target, MethodInfo method, MethodInfo onProxyMethod,
             object[] arguments, Type targetType, IList interceptors);
 
 		[Test]
-		[ExpectedException(typeof (ArgumentNullException))]
 		public void InstantiationWithNullMethod()
 		{
-            CreateMethodInvocation(null, this, null, null, null, GetType(), null);
+            Assert.Throws<ArgumentNullException>(() => CreateMethodInvocation(null, this, null, null, null, GetType(), null));
 		}
 
 		[Test]
-		[ExpectedException(typeof (ArgumentNullException))]
 		public void InstantiationWithNullTarget()
 		{
-            CreateMethodInvocation(null, null, null, null, null, GetType(), null);
+            Assert.Throws<ArgumentNullException>(() => CreateMethodInvocation(null, null, null, null, null, GetType(), null));
 		}
 
 		[Test]
@@ -180,7 +173,7 @@ namespace Spring.Aop.Framework
 		    IMethodInterceptor interceptor = (IMethodInterceptor) repository.CreateMock(typeof (IMethodInterceptor));
             AbstractMethodInvocation join = CreateMethodInvocation(
                null, target, target.GetTargetMethodNoArgs(), null, null, target.GetType(), new object[] { interceptor });
-		    Expect.Call(interceptor.Invoke(join)).Return(target.BullseyeMethod().ToLower(CultureInfo.InvariantCulture));
+		    Expect.Call(interceptor.Invoke(join)).Returns(target.BullseyeMethod().ToLower(CultureInfo.InvariantCulture));
             repository.ReplayAll();
 		    string score = (string) join.Proceed();
             Assert.AreEqual(target.BullseyeMethod().ToLower(CultureInfo.InvariantCulture) + Target.Suffix, score);
@@ -188,18 +181,14 @@ namespace Spring.Aop.Framework
             */
 
             Target target = new Target();
-            IMethodInterceptor mock = (IMethodInterceptor) mocks.CreateMock(typeof(IMethodInterceptor));
+            IMethodInterceptor mock = A.Fake<IMethodInterceptor>();
             AbstractMethodInvocation join = CreateMethodInvocation(
                 null, target, target.GetTargetMethodNoArgs(), null, null, target.GetType(), new object[] { mock });
-			
-            Expect.Call(mock.Invoke(null)).IgnoreArguments().Return(target.BullseyeMethod().ToLower(CultureInfo.InvariantCulture));
-            mocks.ReplayAll();
+
+            A.CallTo(() => mock.Invoke(null)).WithAnyArguments().Returns(target.BullseyeMethod().ToLower(CultureInfo.InvariantCulture));
 
 			string score = (string) join.Proceed();
 			Assert.AreEqual(Target.DefaultScore.ToLower(CultureInfo.InvariantCulture) + Target.Suffix, score);
-			
-            mocks.VerifyAll();
-            
 		}
 
 		[Test]
@@ -224,53 +213,30 @@ namespace Spring.Aop.Framework
 
 		[Test]
 		public void UnwrapsTargetInvocationException_WithInterceptor()
-		{
-			BadCommand target = new BadCommand();
-            IMethodInterceptor mock = (IMethodInterceptor) mocks.CreateMock(typeof(IMethodInterceptor));
-            AbstractMethodInvocation join = CreateMethodInvocation(
-                null, target, target.GetTargetMethod(), null, null, target.GetType(), new object[] { mock });
-		    
-            Expect.Call(mock.Invoke(null)).IgnoreArguments().Return(null);
-            mocks.ReplayAll();
+	    {
+	        BadCommand target = new BadCommand();
+	        IMethodInterceptor mock = A.Fake<IMethodInterceptor>();
+	        AbstractMethodInvocation join = CreateMethodInvocation(
+	            null, target, target.GetTargetMethod(), null, null, target.GetType(), new object[] {mock});
 
-			try
-			{
-				join.Proceed();
-			}
-			catch (NotImplementedException)
-			{
-				// this is good, we want this exception to bubble up...
-			}
-			catch (TargetInvocationException)
-			{
-				Assert.Fail("Must have unwrapped this.");
-			}
-			mocks.VerifyAll();
-		}
+	        A.CallTo(() => mock.Invoke(null)).WithAnyArguments().Throws<NotImplementedException>();
 
-		[Test]
+	        // we want this exception to bubble up...
+	        Assert.Throws<NotImplementedException>(() => join.Proceed());
+	    }
+
+	    [Test]
 		public void UnwrapsTargetInvocationException_WithInterceptorThatThrowsAnException()
 		{
 			BadCommand target = new BadCommand();
-            IMethodInterceptor mock = (IMethodInterceptor) mocks.CreateMock(typeof(IMethodInterceptor));
+            IMethodInterceptor mock = A.Fake<IMethodInterceptor>();
             AbstractMethodInvocation join = CreateMethodInvocation(
                 null, target, target.GetTargetMethod(), null, null, target.GetType(), new object[] { mock });
-		    Expect.Call(mock.Invoke(null)).IgnoreArguments().Throw(new NotImplementedException());
-            mocks.ReplayAll();
 
-			try
-			{
-				join.Proceed();
-			}
-			catch (NotImplementedException)
-			{
-				// this is good, we want this exception to bubble up...
-			}
-			catch (TargetInvocationException)
-			{
-				Assert.Fail("Must have unwrapped this.");
-			}
-			mocks.VerifyAll();
+            A.CallTo(() => mock.Invoke(null)).WithAnyArguments().Throws<NotImplementedException>();
+
+            // we want this exception to bubble up...
+            Assert.Throws<NotImplementedException>(() => join.Proceed());
 		}
 	}
 }

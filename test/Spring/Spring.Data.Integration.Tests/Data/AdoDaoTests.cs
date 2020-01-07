@@ -1,8 +1,6 @@
-using System;
 using NUnit.Framework;
 using Spring.Context;
 using Spring.Context.Support;
-using Spring.Dao;
 using Spring.Objects;
 using Spring.Testing.NUnit;
 
@@ -56,7 +54,7 @@ namespace Spring.Data
 
         }
 
-        [Ignore]
+        [Ignore("Sanity-Check tests intended for verification of base-class behavior only")]
 	    [Test]
 	    public void SimpleCreate()
 	    {
@@ -68,7 +66,7 @@ namespace Spring.Data
             dao.Create("John", 44);
 	    }
 
-        [Ignore]
+        [Ignore("Sanity-Check tests intended for verification of base-class behavior only")]
         [Test]
         public void SimpleDao()
         {
@@ -87,7 +85,7 @@ namespace Spring.Data
             
         }
 
-        [Ignore]
+        [Ignore("Sanity-Check tests intended for verification of base-class behavior only")]
         [Test]
         public void SimpleDao2()
         {
@@ -99,7 +97,7 @@ namespace Spring.Data
             Assert.AreEqual(1, dao.GetCountByDelegate());
         }
 
-        [Ignore]
+        [Ignore("Sanity-Check tests intended for verification of base-class behavior only")]
         [Test]
         public void DaoOperations()
         {

@@ -1,6 +1,4 @@
-﻿#region License
-
-/*
+﻿/*
 /// Copyright 2002-2010 the original author or authors.
  *
 /// Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,13 +14,8 @@
 /// limitations under the License.
  */
 
-#endregion
-
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 
 namespace Spring.Objects.Factory.Support
 {

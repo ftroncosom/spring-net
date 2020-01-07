@@ -20,20 +20,25 @@ namespace Spring.Transaction.Support
 			Assert.IsTrue( 1000 == def.TransactionTimeout );
 			Assert.IsTrue( false == def.ReadOnly );
 			def.ReadOnly = true;
-			Assert.IsTrue( true == def.ReadOnly );
+			Assert.IsTrue( def.ReadOnly );
 		}
 		[Test]
-		public void IsolationLeveNonDefaultl()
+		public void PropogationBehaviorDefault()
 		{
 			DefaultTransactionDefinition def = new DefaultTransactionDefinition();
 			Assert.IsTrue( def.PropagationBehavior == TransactionPropagation.Required );
 		}
-		[Test]
-		[ExpectedException(typeof(ArgumentException))]
+        [Test]
+        public void IsolationLevelDefault()
+        {
+            DefaultTransactionDefinition def = new DefaultTransactionDefinition();
+            Assert.IsTrue(def.TransactionIsolationLevel == IsolationLevel.ReadCommitted);
+        }
+        [Test]
 		public void InvalidTimeout()
 		{
 			DefaultTransactionDefinition def = new DefaultTransactionDefinition();
-			def.TransactionTimeout = -1000;
+			Assert.Throws<ArgumentException>(() => def.TransactionTimeout = -1000);
 		}
 		[Test]
 		public void DefinitionString()

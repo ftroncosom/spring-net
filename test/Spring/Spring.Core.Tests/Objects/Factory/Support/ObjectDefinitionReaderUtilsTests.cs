@@ -1,7 +1,7 @@
 #region License
 
 /*
- * Copyright © 2002-2011 the original author or authors.
+ * Copyright Â© 2002-2011 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,14 +18,12 @@
 
 #endregion
 
-#region Imports
-
 using System;
-using NUnit.Framework;
-using Rhino.Mocks;
-using Spring.Objects.Factory.Config;
 
-#endregion
+using FakeItEasy;
+
+using NUnit.Framework;
+using Spring.Objects.Factory.Config;
 
 namespace Spring.Objects.Factory.Support
 {
@@ -36,69 +34,55 @@ namespace Spring.Objects.Factory.Support
     [TestFixture]
     public sealed class ObjectDefinitionReaderUtilsTests
     {
-        private MockRepository mocks;
         private IObjectDefinitionRegistry registry;
         private IObjectDefinition definition;
 
         [SetUp]
         public void SetUp()
         {
-            mocks = new MockRepository();
-            registry = (IObjectDefinitionRegistry) 
-                mocks.CreateMock(typeof(IObjectDefinitionRegistry));
-
-            definition = (IObjectDefinition) 
-                mocks.CreateMock(typeof (IObjectDefinition));
+            registry = A.Fake<IObjectDefinitionRegistry>();
+            definition = A.Fake<IObjectDefinition>();
         }
 
         [Test]
         public void RegisterObjectDefinitionSunnyDay()
         {
-            registry.RegisterObjectDefinition(null, null);
-            LastCall.IgnoreArguments();
-            mocks.ReplayAll();
-
             ObjectDefinitionHolder holder = new ObjectDefinitionHolder(definition, "foo");
 
             ObjectDefinitionReaderUtils.RegisterObjectDefinition(holder, registry);
-            mocks.VerifyAll();
+
+            A.CallTo(() => registry.RegisterObjectDefinition(null, null)).WithAnyArguments().MustHaveHappened();
         }
 
         [Test]
         public void RegisterObjectDefinitionSunnyDayWithAliases()
         {
-            registry.RegisterObjectDefinition("foo", definition);
-            registry.RegisterAlias("foo", "bar");
-            registry.RegisterAlias("foo", "baz");
-            mocks.ReplayAll();
-
             ObjectDefinitionHolder holder = new ObjectDefinitionHolder(definition, "foo", new string[] {"bar", "baz"});
 
             ObjectDefinitionReaderUtils.RegisterObjectDefinition(holder, registry);
-            
-            mocks.VerifyAll();
+
+            A.CallTo(() => registry.RegisterObjectDefinition("foo", definition)).MustHaveHappened();
+            A.CallTo(() => registry.RegisterAlias("foo", "bar")).MustHaveHappened();
+            A.CallTo(() => registry.RegisterAlias("foo", "baz")).MustHaveHappened();
         }
 
         [Test]
-        [ExpectedException(typeof (ArgumentNullException))]
         public void RegisterObjectDefinitionWithNullDefinition()
         {
-            ObjectDefinitionReaderUtils.RegisterObjectDefinition(null, registry);
+            Assert.Throws<ArgumentNullException>(() => ObjectDefinitionReaderUtils.RegisterObjectDefinition(null, registry));
         }
 
         [Test]
-        [ExpectedException(typeof (ArgumentNullException))]
         public void RegisterObjectDefinitionWithNullRegistry()
         {
             ObjectDefinitionHolder holder = new ObjectDefinitionHolder(definition, "foo");
-            ObjectDefinitionReaderUtils.RegisterObjectDefinition(holder, null);
+            Assert.Throws<ArgumentNullException>(() => ObjectDefinitionReaderUtils.RegisterObjectDefinition(holder, null));
         }
 
         [Test]
-        [ExpectedException(typeof (ArgumentNullException))]
         public void RegisterObjectDefinitionWithAllArgumentsNull()
         {
-            ObjectDefinitionReaderUtils.RegisterObjectDefinition(null, null);
+            Assert.Throws<ArgumentNullException>(() => ObjectDefinitionReaderUtils.RegisterObjectDefinition(null, null));
         }
 
         [Test]
@@ -107,40 +91,24 @@ namespace Spring.Objects.Factory.Support
             registry.RegisterObjectDefinition("foo", definition);
 
             // we assume that some other object defition has already been associated with this alias...
-            registry.RegisterAlias(null, null);
-            LastCall.IgnoreArguments().Throw(new ObjectDefinitionStoreException());
-            mocks.ReplayAll();
+            A.CallTo(() => registry.RegisterAlias(null, null)).WithAnyArguments().Throws<ObjectDefinitionStoreException>();
 
             ObjectDefinitionHolder holder
-                = new ObjectDefinitionHolder(definition, "foo", new string[] { "bing" });
+                = new ObjectDefinitionHolder(definition, "foo", new string[] {"bing"});
 
-            try
-            {
-                ObjectDefinitionReaderUtils.RegisterObjectDefinition(holder, registry);
-                Assert.Fail("Must have thrown an ObjectDefinitionStoreException store by this point.");
-            }
-            catch (ObjectDefinitionStoreException)
-            {
-                // expected...
-            }
-
-            mocks.VerifyAll();
+            Assert.Throws<ObjectDefinitionStoreException>(() => ObjectDefinitionReaderUtils.RegisterObjectDefinition(holder, registry));
         }
 
         [Test]
-        [ExpectedException(typeof (ArgumentNullException))]
         public void GenerateObjectNameWithNullDefinition()
         {
-            ObjectDefinitionReaderUtils.GenerateObjectName(null, registry);
+            Assert.Throws<ArgumentNullException>(() => ObjectDefinitionReaderUtils.GenerateObjectName(null, registry));
         }
 
         [Test]
-        [ExpectedException(typeof (ArgumentNullException))]
         public void GenerateObjectNameWithNullRegistry()
         {
-            ObjectDefinitionReaderUtils.GenerateObjectName(
-                (IConfigurableObjectDefinition) mocks.CreateMock(typeof(IConfigurableObjectDefinition)),
-                null);
+            Assert.Throws<ArgumentNullException>(() => ObjectDefinitionReaderUtils.GenerateObjectName(A.Fake<IConfigurableObjectDefinition>(), null));
         }
     }
 }

@@ -19,16 +19,16 @@
 #endregion
 
 using System.Collections;
-using NUnit.Framework;
 
-using Rhino.Mocks;
+using FakeItEasy;
+
+using NUnit.Framework;
 
 using Spring.Core.IO;
 using Spring.Util;
 
 namespace Spring.Objects.Factory.Config
 {
-    
     /// <summary>
     /// Unit tests for the TypeAliasConfigurer class
     /// </summary>
@@ -36,19 +36,16 @@ namespace Spring.Objects.Factory.Config
     [TestFixture]
     public class ResourceHandlerConfigurerTests
     {
-        private MockRepository mocks;
-
         [SetUp]
         public void SetUp()
         {
-            mocks = new MockRepository();
         }
 
         [Test]
         public void Serialization()
         {
             IDictionary resourceHandlers = new Hashtable();
-            resourceHandlers.Add("httpsss", typeof(UrlResource));
+            resourceHandlers.Add("httpsss", typeof(UrlResource).AssemblyQualifiedName);
 
             ResourceHandlerConfigurer resourceHandlerConfiguer = new ResourceHandlerConfigurer();
             resourceHandlerConfiguer.ResourceHandlers = resourceHandlers;
@@ -60,7 +57,6 @@ namespace Spring.Objects.Factory.Config
         }
 
         [Test]
-		[ExpectedException(typeof(ObjectInitializationException))]
         public void UseInvalidTypeForDictionaryValue()
         {
             IDictionary resourceHandlers = new Hashtable();
@@ -69,13 +65,10 @@ namespace Spring.Objects.Factory.Config
             ResourceHandlerConfigurer resourceHandlerConfiguer = new ResourceHandlerConfigurer();
             resourceHandlerConfiguer.ResourceHandlers = resourceHandlers;
 
-
-            resourceHandlerConfiguer.PostProcessObjectFactory((IConfigurableListableObjectFactory) mocks.DynamicMock(typeof(IConfigurableListableObjectFactory)));
-    
+            Assert.Throws<ObjectInitializationException>(() => resourceHandlerConfiguer.PostProcessObjectFactory(A.Fake<IConfigurableListableObjectFactory>()));
         }
 
         [Test]
-        [ExpectedException(typeof(ObjectInitializationException))]
         public void UseNonResolvableTypeForDictionaryValue()
         {
             IDictionary resourceHandlers = new Hashtable();
@@ -85,8 +78,7 @@ namespace Spring.Objects.Factory.Config
             resourceHandlerConfiguer.ResourceHandlers = resourceHandlers;
 
 
-            resourceHandlerConfiguer.PostProcessObjectFactory((IConfigurableListableObjectFactory) mocks.DynamicMock(typeof(IConfigurableListableObjectFactory)));
-    
+            Assert.Throws<ObjectInitializationException>(() => resourceHandlerConfiguer.PostProcessObjectFactory(A.Fake<IConfigurableListableObjectFactory>()));
         }
 
         [Test]
@@ -117,7 +109,7 @@ namespace Spring.Objects.Factory.Config
             resourceHandlerConfiguer.Order = 1;
 
 
-            resourceHandlerConfiguer.PostProcessObjectFactory((IConfigurableListableObjectFactory) mocks.DynamicMock(typeof(IConfigurableListableObjectFactory)));
+            resourceHandlerConfiguer.PostProcessObjectFactory(A.Fake<IConfigurableListableObjectFactory>());
 
             //todo investigate mocking the typeregistry, for now ask the actual one for information.
             Assert.IsTrue(ResourceHandlerRegistry.IsHandlerRegistered("httpsss"),

@@ -64,8 +64,8 @@ namespace Spring.Template.Velocity {
     /// <see cref="VelocityEngineFactoryObject" />
     /// <see cref="CommonsLoggingLogSystem" />
     /// <author>Erez Mazor</author>
-    public class VelocityEngineFactory {
-        private const char DELIMITER = ',';
+    public class VelocityEngineFactory
+    {
 
         /// <summary>
         /// Shared logger instance.
@@ -198,7 +198,8 @@ namespace Spring.Template.Velocity {
         /// <see cref="InitVelocityResourceLoader" />
         /// <see cref="PostProcessVelocityEngine" />
         /// <see cref="VelocityEngine.Init()" />
-        public VelocityEngine CreateVelocityEngine() {
+        public VelocityEngine CreateVelocityEngine()
+        {
             ExtendedProperties extendedProperties = new ExtendedProperties();
             VelocityEngine velocityEngine = NewVelocityEngine();
 
@@ -272,7 +273,8 @@ namespace Spring.Template.Velocity {
         /// </summary>
         /// <returns>VelocityEngine instance (non-configured)</returns>
         /// <see cref="CreateVelocityEngine"/>
-        protected static VelocityEngine NewVelocityEngine() {
+        protected static VelocityEngine NewVelocityEngine()
+        {
             return new VelocityEngine();
         }
 
@@ -288,7 +290,8 @@ namespace Spring.Template.Velocity {
         /// <see cref="SpringResourceLoader"/>
         /// <see cref="InitSpringResourceLoader"/>
         /// <see cref="CreateVelocityEngine"/>
-        protected void InitVelocityResourceLoader(VelocityEngine velocityEngine, ExtendedProperties extendedProperties, IList<string> paths) {
+        protected void InitVelocityResourceLoader(VelocityEngine velocityEngine, ExtendedProperties extendedProperties, IList<string> paths)
+        {
 
             if (PreferFileSystemAccess) {
                 // Try to load via the file system, fall back to SpringResourceLoader
@@ -335,7 +338,8 @@ namespace Spring.Template.Velocity {
         /// <param name="resourceLoaderPathString">resourceLoaderPath the path to load Velocity resources from</param>
         /// <see cref="SpringResourceLoader"/>
         /// <see cref="InitVelocityResourceLoader"/>
-        protected void InitSpringResourceLoader(VelocityEngine velocityEngine, ExtendedProperties extendedProperties, string resourceLoaderPathString) {
+        protected void InitSpringResourceLoader(VelocityEngine velocityEngine, ExtendedProperties extendedProperties, string resourceLoaderPathString)
+        {
             extendedProperties.SetProperty(RuntimeConstants.RESOURCE_LOADER, SpringResourceLoader.NAME);
             Type springResourceLoaderType = typeof(SpringResourceLoader);
             string springResourceLoaderTypeName = springResourceLoaderType.FullName + "; " + springResourceLoaderType.Assembly.GetName().Name;
@@ -355,7 +359,8 @@ namespace Spring.Template.Velocity {
         /// <exception cref="IOException" />
         /// <see cref="CreateVelocityEngine"/>
         /// <see cref="VelocityEngine.Init()"/>
-        protected void PostProcessVelocityEngine(VelocityEngine velocityEngine) {
+        protected virtual void PostProcessVelocityEngine(VelocityEngine velocityEngine)
+        {
         }
 
         /// <summary>

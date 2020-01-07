@@ -22,12 +22,12 @@
 
 using System;
 using System.Collections;
-using System.Collections.Specialized;
 using System.Web;
 using System.Web.Caching;
 using System.Web.SessionState;
 using Common.Logging;
 using Spring.Collections;
+using Spring.Context.Attributes;
 using Spring.Context.Support;
 using Spring.Objects.Factory.Config;
 using Spring.Util;
@@ -49,8 +49,6 @@ namespace Spring.Objects.Factory.Support
     /// <author>Aleksandar Seovic</author>
     public class WebObjectFactory : DefaultListableObjectFactory
     {
-        private readonly static ILog log = LogManager.GetLogger(typeof(WebObjectFactory));
-
         private static bool s_eventHandlersRegistered = false;
         private readonly static string OBJECTTABLEKEY = "spring.objects";
 
@@ -77,7 +75,7 @@ namespace Spring.Objects.Factory.Support
         /// Registers events handlers with <see cref="WebSupportModule"/> to ensure
         /// proper disposal of 'request'- and 'session'-scoped objects
         /// </summary>
-        private static void EnsureEventHandlersRegistered()
+        private void EnsureEventHandlersRegistered()
         {
             if (!s_eventHandlersRegistered)
             {
@@ -86,8 +84,8 @@ namespace Spring.Objects.Factory.Support
                     if (s_eventHandlersRegistered) return;
 
                     if (log.IsDebugEnabled) log.Debug("hooking up event handlers");
-                    VirtualEnvironment.EndRequest += new VirtualEnvironment.RequestEventHandler(OnEndRequest);
-                    VirtualEnvironment.EndSession += new VirtualEnvironment.SessionEventHandler(OnEndSession);
+                    VirtualEnvironment.EndRequest += OnEndRequest;
+                    VirtualEnvironment.EndSession += OnEndSession;
 
                     s_eventHandlersRegistered = true;
                 }
@@ -266,10 +264,9 @@ namespace Spring.Objects.Factory.Support
         protected override object CreateAndCacheSingletonInstance(
             string objectName, RootObjectDefinition objectDefinition, object[] arguments)
         {
-            if (IsWebScopedSingleton(objectDefinition)
-                )
+            if (IsWebScopedSingleton(objectDefinition))
             {
-                ObjectScope scope = ((IWebObjectDefinition)objectDefinition).Scope;
+                ObjectScope scope = GetObjectScope(objectDefinition);
 
                 if (scope == ObjectScope.Request)
                 {
@@ -350,6 +347,22 @@ namespace Spring.Objects.Factory.Support
         }
 
         /// <summary>
+        /// We need this override so that Web Scoped Singletons are not registered in general 
+        /// DisposalObjectRegister 
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="instance"></param>
+        /// <param name="objectDefinition"></param>
+        protected override void RegisterDisposableObjectIfNecessary(string name, object instance,
+                                                                    RootObjectDefinition objectDefinition)
+        {
+            if (!IsWebScopedSingleton(objectDefinition))
+            {
+                base.RegisterDisposableObjectIfNecessary(name, instance, objectDefinition);
+            }
+        }
+
+        /// <summary>
         /// Add the created, but yet unpopulated singleton to the singleton cache
         /// to be able to resolve circular references
         /// </summary>
@@ -363,7 +376,7 @@ namespace Spring.Objects.Factory.Support
         {
             if (IsWebScopedSingleton(objectDefinition))
             {
-                ObjectScope scope = ((IWebObjectDefinition) objectDefinition).Scope;
+                ObjectScope scope = GetObjectScope(objectDefinition);
                 if (scope == ObjectScope.Request)
                 {
                     this.Request[objectName] = rawSingletonInstance;
@@ -396,7 +409,7 @@ namespace Spring.Objects.Factory.Support
         {
             if (IsWebScopedSingleton(objectDefinition))
             {
-                ObjectScope scope = ((IWebObjectDefinition) objectDefinition).Scope;
+                ObjectScope scope = GetObjectScope(objectDefinition);
                 if (scope == ObjectScope.Request)
                 {
                     this.Request.Remove(objectName);
@@ -418,13 +431,25 @@ namespace Spring.Objects.Factory.Support
 
         private bool IsWebScopedSingleton(IObjectDefinition objectDefinition)
         {
-            if (objectDefinition.IsSingleton 
-                && objectDefinition is IWebObjectDefinition)
+            if (objectDefinition.IsSingleton && 
+                (objectDefinition is IWebObjectDefinition || objectDefinition is ScannedGenericObjectDefinition))
             {
-                ObjectScope scope = ((IWebObjectDefinition) objectDefinition).Scope;
+                ObjectScope scope = GetObjectScope(objectDefinition);
                 return (scope == ObjectScope.Request) || (scope == ObjectScope.Session);
             }
             return false;
+        }
+
+        private ObjectScope GetObjectScope(IObjectDefinition objectDefinition)
+        {
+            if (objectDefinition is IWebObjectDefinition)
+            {
+                return ((IWebObjectDefinition) objectDefinition).Scope;
+            }
+
+            ObjectScope scope = (ObjectScope) Enum.Parse(typeof (ObjectScope), objectDefinition.Scope, true);
+
+            return scope;            
         }
 
         /// <summary>
@@ -454,7 +479,7 @@ namespace Spring.Objects.Factory.Support
         /// <summary>
         /// Disposes all 'request'-scoped objects at the end of each Request
         /// </summary>
-        private static void OnEndRequest(HttpContext context)
+        private void OnEndRequest(HttpContext context)
         {
             IDictionary items = context.Items[OBJECTTABLEKEY] as IDictionary;
 
@@ -476,7 +501,7 @@ namespace Spring.Objects.Factory.Support
         /// <summary>
         /// Disposes all 'session'-scoped objects at the end of a session
         /// </summary>
-        private static void OnEndSession(HttpSessionState session, CacheItemRemovedReason reason)
+        private void OnEndSession(HttpSessionState session, CacheItemRemovedReason reason)
         {
             IDictionary items = null;
             try

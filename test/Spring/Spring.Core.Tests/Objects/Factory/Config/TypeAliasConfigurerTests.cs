@@ -20,8 +20,10 @@
 
 using System;
 using System.Collections;
+
+using FakeItEasy;
+
 using NUnit.Framework;
-using Rhino.Mocks;
 using Spring.Collections;
 using Spring.Context.Support;
 using Spring.Core.TypeResolution;
@@ -37,22 +39,19 @@ namespace Spring.Objects.Factory.Config
     [TestFixture]
     public class TypeAliasConfigurerTests
     {
-        private MockRepository mocks;
         private IConfigurableListableObjectFactory factory;
 
         [SetUp]
         public void SetUp()
         {
-            mocks = new MockRepository();
-            factory = (IConfigurableListableObjectFactory)
-                      mocks.CreateMock(typeof (IConfigurableListableObjectFactory));
+            factory = A.Fake<IConfigurableListableObjectFactory>();
         }
 
         [Test]
         public void Serialization()
         {
             IDictionary typeAliases = new Hashtable();
-            typeAliases.Add("LinkedList", typeof(LinkedList));
+            typeAliases.Add("LinkedList", typeof(LinkedList).AssemblyQualifiedName);
 
             TypeAliasConfigurer typeAliasConfigurer = new TypeAliasConfigurer();
             typeAliasConfigurer.TypeAliases = typeAliases;
@@ -63,7 +62,6 @@ namespace Spring.Objects.Factory.Config
         }
 
         [Test]
-		[ExpectedException(typeof(ObjectInitializationException))]
         public void UseInvalidTypeForDictionaryValue()
         {
             IDictionary typeAliases = new Hashtable();
@@ -72,11 +70,10 @@ namespace Spring.Objects.Factory.Config
             TypeAliasConfigurer typeAliasConfigurer = new TypeAliasConfigurer();
             typeAliasConfigurer.TypeAliases = typeAliases;
 
-            typeAliasConfigurer.PostProcessObjectFactory(factory);
+            Assert.Throws<ObjectInitializationException>(() => typeAliasConfigurer.PostProcessObjectFactory(factory));
         }
 
         [Test]
-        [ExpectedException(typeof(ObjectInitializationException))]
         public void UseNonResolvableTypeForDictionaryValue()
         {
             IDictionary typeAliases = new Hashtable();
@@ -85,7 +82,7 @@ namespace Spring.Objects.Factory.Config
             TypeAliasConfigurer typeAliasConfigurer = new TypeAliasConfigurer();
             typeAliasConfigurer.TypeAliases = typeAliases;
 
-            typeAliasConfigurer.PostProcessObjectFactory(factory);
+            Assert.Throws<ObjectInitializationException>(() => typeAliasConfigurer.PostProcessObjectFactory(factory));
         }
 
         [Test]

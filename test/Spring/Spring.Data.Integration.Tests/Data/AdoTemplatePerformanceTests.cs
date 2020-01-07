@@ -30,7 +30,6 @@ using Spring.Context;
 using Spring.Context.Support;
 using Spring.Data.Core;
 using Spring.Reflection.Dynamic;
-using Spring.Transaction;
 using Spring.Transaction.Support;
 using Spring.Util;
 
@@ -178,7 +177,7 @@ namespace Spring.Data
 
             TransactionTemplate tt = new TransactionTemplate(tm);
             double timeElapsed = 0;
-            tt.Execute(delegate(ITransactionStatus status)
+            tt.Execute(status =>
                            {
                                start = DateTime.Now;
                                for (int i = 0; i < numIterations; i++)

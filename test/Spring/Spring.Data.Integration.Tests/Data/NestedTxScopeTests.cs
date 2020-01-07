@@ -48,7 +48,7 @@ namespace Spring.Data
         public void TxTemplate()
         {
             IDbProvider dbProvider = DbProviderFactory.GetDbProvider("System.Data.SqlClient");
-            dbProvider.ConnectionString = @"Data Source=MARKT60\SQL2005;Initial Catalog=CreditsAndDebits;User ID=springqa; Password=springqa";
+            dbProvider.ConnectionString = @"Data Source=SPRINGQA;Initial Catalog=CreditsAndDebits;User ID=springqa; Password=springqa";
             //IPlatformTransactionManager tm = new ServiceDomainPlatformTransactionManager();
             //IPlatformTransactionManager tm = new TxScopeTransactionManager();
             IPlatformTransactionManager tm = new AdoPlatformTransactionManager(dbProvider);
@@ -56,7 +56,7 @@ namespace Spring.Data
 
             TransactionTemplate tt = new TransactionTemplate(tm);
             tt.PropagationBehavior = TransactionPropagation.Required;
-            tt.Execute(delegate(ITransactionStatus status)
+            tt.Execute(status =>
                            {
                                if (System.Transactions.Transaction.Current != null) Console.WriteLine("tx 1 id = " + System.Transactions.Transaction.Current.TransactionInformation.LocalIdentifier);
                                Console.WriteLine("tx 1 'IsNewTransaction' = " + status.IsNewTransaction);
@@ -64,7 +64,7 @@ namespace Spring.Data
                                TransactionTemplate tt2 = new TransactionTemplate(tm);
                                tt2.PropagationBehavior = TransactionPropagation.RequiresNew;
                                
-                               tt2.Execute(delegate(ITransactionStatus status2)
+                               tt2.Execute(status2 =>
                                                {
                                                    if (System.Transactions.Transaction.Current != null) Console.WriteLine("tx 2 = " + System.Transactions.Transaction.Current.TransactionInformation.LocalIdentifier);
                                                    Console.WriteLine("tx 2 'IsNewTransaction' = " + status2.IsNewTransaction);
@@ -95,7 +95,7 @@ namespace Spring.Data
                 using (SqlConnection cn2005 = new SqlConnection())
                 {
                     cn2005.ConnectionString =
-                        @"Data Source=MARKT60\SQL2005;Initial Catalog=CreditsAndDebits;User ID=springqa; Password=springqa";
+                        @"Data Source=SPRINGQA;Initial Catalog=CreditsAndDebits;User ID=springqa; Password=springqa";
                     SqlCommand cmd = new SqlCommand(updateSql1, cn2005);
                     cn2005.Open();
                     cmd.ExecuteNonQuery();
@@ -118,7 +118,7 @@ namespace Spring.Data
   System.Transactions.Transaction.Current.TransactionInformation.LocalIdentifier);
                 using (SqlConnection cn2005 = new SqlConnection())
                 {
-                    cn2005.ConnectionString = @"Data Source=MARKT60\SQL2005;Initial Catalog=CreditsAndDebits;User ID=springqa; Password=springqa";
+                    cn2005.ConnectionString = @"Data Source=SPRINGQA;Initial Catalog=CreditsAndDebits;User ID=springqa; Password=springqa";
                     SqlCommand cmd = new SqlCommand(updateSql2, cn2005);
                     cn2005.Open();
                     cmd.ExecuteNonQuery();
@@ -153,7 +153,7 @@ namespace Spring.Data
 
             using (SqlConnection cn2005 = new SqlConnection())
             {
-                cn2005.ConnectionString = @"Data Source=MARKT60\SQL2005;Initial Catalog=CreditsAndDebits;User ID=springqa; Password=springqa";
+                cn2005.ConnectionString = @"Data Source=SPRINGQA;Initial Catalog=CreditsAndDebits;User ID=springqa; Password=springqa";
                 SqlCommand cmd = new SqlCommand(updateSql2, cn2005);
                 cn2005.Open();
                 cmd.ExecuteNonQuery();

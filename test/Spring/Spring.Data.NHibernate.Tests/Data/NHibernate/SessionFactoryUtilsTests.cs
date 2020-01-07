@@ -18,25 +18,17 @@
 
 #endregion
 
-#region Imports
-
-using System.Collections;
-using System.Data;
 using System.Data.SqlClient;
-using System.IO;
-using NHibernate;
-using NHibernate.Cfg;
+
+using FakeItEasy;
+
 using NHibernate.Connection;
 using NHibernate.Driver;
 using NHibernate.Engine;
 
 using NUnit.Framework;
 
-using Rhino.Mocks;
-
 using Spring.Data.Common;
-
-#endregion
 
 namespace Spring.Data.NHibernate
 {
@@ -47,30 +39,22 @@ namespace Spring.Data.NHibernate
     [TestFixture]
     public class SessionFactoryUtilsTests
     {
-#if !NET_1_1
         [Test]
         public void SessionFactoryUtilsWithGetDbProvider()
         {
-            MockRepository mockery = new MockRepository();
-            ISessionFactoryImplementor sessionFactory = (ISessionFactoryImplementor) mockery.CreateMultiMock(typeof(ISessionFactory), typeof(ISessionFactoryImplementor));
+            ISessionFactoryImplementor sessionFactory = A.Fake<ISessionFactoryImplementor>();
 
-            IDriver driver = (IDriver)mockery.DynamicMock(typeof(IDriver));
-            Expect.Call(driver.CreateCommand()).Repeat.AtLeastOnce().Return(new SqlCommand());
+            DriverBase driver = A.Fake<DriverBase>();
+            A.CallTo(() => driver.CreateCommand()).Returns(new SqlCommand());
 
-            IConnectionProvider cp = (IConnectionProvider) mockery.DynamicMock(typeof (IConnectionProvider));
-            Expect.Call(cp.Driver).Repeat.AtLeastOnce().Return(driver);
+            IConnectionProvider cp = A.Fake<IConnectionProvider>();
+            A.CallTo(() => cp.Driver).Returns(driver);
 
-            Expect.Call(sessionFactory.ConnectionProvider).Repeat.AtLeastOnce().Return(cp);
+            A.CallTo(() => sessionFactory.ConnectionProvider).Returns(cp);
 
-            mockery.ReplayAll();
             IDbProvider provider = SessionFactoryUtils.GetDbProvider(sessionFactory);
 
             Assert.AreEqual(typeof(SqlCommand), provider.DbMetadata.CommandType);
-            
-            mockery.VerifyAll();
         }
-#endif
     }
-
-   
 }

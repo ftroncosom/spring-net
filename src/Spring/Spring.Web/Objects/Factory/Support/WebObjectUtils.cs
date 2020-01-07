@@ -73,12 +73,6 @@ namespace Spring.Objects.Factory.Support
                 s_log.Debug( "creating page instance '" + pageUrl + "'" );
             }
 
-//            HttpContext ctx = HttpContext.Current;
-//            if (ctx == null)
-//            {
-//                throw new ObjectCreationException(
-//                    "Unable to instantiate page. HttpContext is not defined." );
-//            }
             IHttpHandler page;
             try
             {
@@ -118,23 +112,7 @@ namespace Spring.Objects.Factory.Support
         /// <returns></returns>
         internal static IHttpHandler CreateHandler( string pageUrl )
         {
-            IHttpHandler page;
-//            HttpContext ctx = HttpContext.Current;
-//#if NET_1_1
-//                string physicalPath = ctx.Server.MapPath(pageUrl);
-//				s_log.Debug(string.Format("constructing page virtual path '{0}' from physical file '{1}'", pageUrl, physicalPath));
-//            	page = PageParser.GetCompiledPageInstance(pageUrl, physicalPath, ctx);
-//#else
-//            string rootedVPath = WebUtils.CombineVirtualPaths( ctx.Request.CurrentExecutionFilePath, pageUrl );
-//            if (s_log.IsDebugEnabled)
-//            {
-//                s_log.Debug( "page vpath is " + rootedVPath );
-//            }
-//
-//            page = BuildManager.CreateInstanceFromVirtualPath( rootedVPath, typeof( IHttpHandler ) ) as IHttpHandler;
-//#endif
-            page = VirtualEnvironment.CreateInstanceFromVirtualPath(pageUrl, typeof (IHttpHandler)) as IHttpHandler;
-            return page;
+            return VirtualEnvironment.CreateInstanceFromVirtualPath(pageUrl, typeof(IHttpHandler)) as IHttpHandler;
         }
 
         /// <summary>
@@ -215,12 +193,6 @@ namespace Spring.Objects.Factory.Support
             }
 
             Type pageType = VirtualEnvironment.GetCompiledType(rootedVPath);
-//#if NET_2_0
-//            pageType = BuildManager.GetCompiledType( rootedVPath ); // requires rooted virtual path!
-//#else
-//            pageType = CreatePageInstance(pageUrl).GetType();
-//#endif
-
             if (s_log.IsDebugEnabled)
             {
                 s_log.Debug( string.Format( "got page type '{0}' for vpath '{1}'", pageType.FullName, rootedVPath ) );
@@ -256,11 +228,6 @@ namespace Spring.Objects.Factory.Support
             Type controlType;
             try
             {
-//#if NET_2_0
-//                controlType = BuildManager.GetCompiledType( rootedVPath ); // requires rooted virtual path!
-//#else
-//              controlType = (Type) miGetCompiledUserControlType.Invoke(null, new object[] { rootedVPath, null, ctx });
-//#endif
                 controlType = VirtualEnvironment.GetCompiledType(rootedVPath);
             }
             catch (HttpException httpEx)

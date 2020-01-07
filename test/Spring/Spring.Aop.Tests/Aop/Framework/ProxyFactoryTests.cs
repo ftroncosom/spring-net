@@ -18,20 +18,18 @@
 
 #endregion
 
-#region Imports
-
 using System;
 using System.Runtime.Serialization;
 using AopAlliance.Aop;
 using AopAlliance.Intercept;
+
+using FakeItEasy;
+
 using NUnit.Framework;
-using Rhino.Mocks;
 using Spring.Aop.Interceptor;
 using Spring.Aop.Support;
 using Spring.Objects;
 using Spring.Util;
-
-#endregion
 
 namespace Spring.Aop.Framework
 {
@@ -44,15 +42,6 @@ namespace Spring.Aop.Framework
     [TestFixture]
     public sealed class ProxyFactoryTests
     {
-
-        private MockRepository mocks;
-
-        [SetUp]
-        public void Setup()
-        {
-            mocks = new MockRepository();
-        }
-
         public interface IDoubleClickable
         {
             event EventHandler DoubleClick;
@@ -132,7 +121,7 @@ namespace Spring.Aop.Framework
                 object proxy = pf.GetProxy();
             }
 
-            // fails when running in resharper/testdriven.net 
+            // fails when running in resharper/testdriven.net
             // DynamicProxyManager.SaveAssembly();
 
         }
@@ -225,26 +214,23 @@ namespace Spring.Aop.Framework
         }
 
         [Test]
-        [ExpectedException(typeof(AopConfigException))]
         public void InstantiateWithNullTarget()
         {
-            new ProxyFactory((object)null);
+            Assert.Throws<AopConfigException>(() => new ProxyFactory((object) null));
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void AddNullInterface()
         {
-            new ProxyFactory().AddInterface(null);
+            Assert.Throws<ArgumentNullException>(() => new ProxyFactory().AddInterface(null));
         }
 
         [Test]
-        [ExpectedException(typeof(AopConfigException))]
         public void AddInterfaceWhenConfigurationIsFrozen()
         {
             ProxyFactory factory = new ProxyFactory();
             factory.IsFrozen = true;
-            factory.AddInterface(typeof(ITestObject));
+            Assert.Throws<AopConfigException>(() => factory.AddInterface(typeof(ITestObject)));
         }
 
         [Test]
@@ -526,24 +512,21 @@ namespace Spring.Aop.Framework
             //MLP SPRNET-1367
             //IDynamicMock mock = new DynamicMock(typeof(IAdvisedSupportListener));
             //IAdvisedSupportListener listener = (IAdvisedSupportListener)mock.Object;
-            IAdvisedSupportListener listener =
-                (IAdvisedSupportListener) mocks.CreateMock(typeof (IAdvisedSupportListener));
-            listener.Activated(null);
-            LastCall.On(listener).IgnoreArguments();
+            IAdvisedSupportListener listener = A.Fake<IAdvisedSupportListener>();
             //listener.Activated();
             //mock.Expect("Activated");
 
-            mocks.ReplayAll();
             ProxyFactory factory = new ProxyFactory(new TestObject());
             factory.AddListener(listener);
             factory.GetProxy();
-            mocks.VerifyAll();
+
+            A.CallTo(() => listener.Activated(A<AdvisedSupport>._)).MustHaveHappened();
         }
 
         [Test]
         public void AdvisedSupportListenerMethodsAreCalledAppropriately()
         {
-            IAdvisedSupportListener listener = MockRepository.GenerateMock<IAdvisedSupportListener>();
+            IAdvisedSupportListener listener = A.Fake<IAdvisedSupportListener>();
 
             ProxyFactory factory = new ProxyFactory(new TestObject());
             factory.AddListener(listener);
@@ -555,15 +538,15 @@ namespace Spring.Aop.Framework
             // must fire the InterfacesChanged callback...
             factory.AddInterface(typeof(ISerializable));
 
-            listener.AssertWasCalled(x => x.Activated(Arg<AdvisedSupport>.Is.NotNull));
-            listener.AssertWasCalled(x => x.AdviceChanged(Arg<AdvisedSupport>.Is.NotNull));
-            listener.AssertWasCalled(x => x.InterfacesChanged(Arg<AdvisedSupport>.Is.NotNull));
+            A.CallTo(() => listener.Activated(A<AdvisedSupport>.That.Not.IsNull())).MustHaveHappened();
+            A.CallTo(() => listener.AdviceChanged(A<AdvisedSupport>.That.Not.IsNull())).MustHaveHappened();
+            A.CallTo(() => listener.InterfacesChanged(A<AdvisedSupport>.That.Not.IsNull())).MustHaveHappened();
         }
 
         [Test]
         public void AdvisedSupportListenerMethodsAre_NOT_CalledIfProxyHasNotBeenCreated()
         {
-            IAdvisedSupportListener listener = MockRepository.GenerateMock<IAdvisedSupportListener>();
+            IAdvisedSupportListener listener = A.Fake<IAdvisedSupportListener>();
 
             ProxyFactory factory = new ProxyFactory(new TestObject());
             factory.AddListener(listener);
@@ -573,8 +556,8 @@ namespace Spring.Aop.Framework
             // must not fire the InterfacesChanged callback...
             factory.AddInterface(typeof(ISerializable));
 
-            listener.AssertWasNotCalled(x => x.AdviceChanged(Arg<AdvisedSupport>.Is.Anything));
-            listener.AssertWasNotCalled(x => x.InterfacesChanged(Arg<AdvisedSupport>.Is.Anything));
+            A.CallTo(() => listener.AdviceChanged(A<AdvisedSupport>._)).MustNotHaveHappened();
+            A.CallTo(() => listener.InterfacesChanged(A<AdvisedSupport>._)).MustNotHaveHappened();
         }
 
         [Test]
@@ -594,7 +577,7 @@ namespace Spring.Aop.Framework
         [Test]
         public void RemoveAdvisedSupportListener()
         {
-            IAdvisedSupportListener listener = MockRepository.GenerateMock<IAdvisedSupportListener>();
+            IAdvisedSupportListener listener = A.Fake<IAdvisedSupportListener>();
 
             ProxyFactory factory = new ProxyFactory(new TestObject());
             factory.AddListener(listener);
@@ -603,18 +586,17 @@ namespace Spring.Aop.Framework
             factory.GetProxy();
 
             // check that no lifecycle callback methods were invoked on the listener...
-            listener.AssertWasNotCalled(x => x.Activated(Arg<AdvisedSupport>.Is.Anything));
-            listener.AssertWasNotCalled(x => x.AdviceChanged(Arg<AdvisedSupport>.Is.Anything));
-            listener.AssertWasNotCalled(x => x.InterfacesChanged(Arg<AdvisedSupport>.Is.Anything));
+            A.CallTo(() => listener.Activated(null)).WithAnyArguments().MustNotHaveHappened();
+            A.CallTo(() => listener.AdviceChanged(null)).WithAnyArguments().MustNotHaveHappened();
+            A.CallTo(() => listener.InterfacesChanged(null)).WithAnyArguments().MustNotHaveHappened();
         }
 
         [Test]
-        [ExpectedException(typeof(AopConfigException))]
         public void Frozen_RemoveAdvisor()
         {
             ProxyFactory factory = new ProxyFactory();
             factory.IsFrozen = true;
-            factory.RemoveAdvisor(null);
+            Assert.Throws<AopConfigException>(() => factory.RemoveAdvisor(null));
         }
 
         public interface IMultiProxyingTestInterface
@@ -661,7 +643,7 @@ namespace Spring.Aop.Framework
             NopInterceptor diUnused = new NopInterceptor(1); // // make instance unique (see SPRNET-847)
             TestCountingIntroduction countingMixin = new TestCountingIntroduction();
 
-            pf1.AddAdvice(diUnused);                                                      
+            pf1.AddAdvice(diUnused);
             pf1.AddAdvisor(new DefaultPointcutAdvisor(di));
             pf1.AddIntroduction(new DefaultIntroductionAdvisor(countingMixin));
 

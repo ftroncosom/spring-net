@@ -38,12 +38,10 @@ namespace Spring.Util
         private static readonly object assemblyResolverLock;
 
         private static readonly bool isMono;
-        private static readonly bool isClr4;
 
         static SystemUtils()
         {
-            isMono = Type.GetType("Mono.Runtime") == null ? false : true;
-            isClr4 = Environment.Version.Major == 4 ? true : false;
+            isMono = Type.GetType("Mono.Runtime") != null;
             assemblyResolverLock = new object();
         }
 
@@ -64,7 +62,7 @@ namespace Spring.Util
             {
                 lock (assemblyResolverLock)
                 {
-                    AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(LoadedAssemblyResolver);
+                    AppDomain.CurrentDomain.AssemblyResolve += LoadedAssemblyResolver;
                     assemblyResolverRegistered = true;
                 }
             }
@@ -91,14 +89,6 @@ namespace Spring.Util
         public static bool MonoRuntime
         {
             get { return isMono; }
-        }
-
-        /// <summary>
-        /// Returns true if running on CLR 4.0 under InProc SxS mode
-        /// </summary>
-        public static bool Clr4Runtime
-        {
-            get { return isClr4; }
         }
 
         /// <summary>

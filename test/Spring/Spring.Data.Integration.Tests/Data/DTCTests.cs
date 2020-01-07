@@ -1,7 +1,7 @@
 #region License
 
 /*
- * Copyright © 2002-2011 the original author or authors.
+ * Copyright Â© 2002-2011 the original author or authors.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,16 +20,10 @@
 
 #region Imports
 
-using System;
-using System.Collections.Specialized;
 using NUnit.Framework;
-using Spring.Aop.Config;
+
 using Spring.Context;
 using Spring.Context.Support;
-using Common.Logging;
-using Common.Logging.Simple;
-using Spring.Objects.Factory.Xml;
-using Spring.Transaction.Config;
 
 #endregion
 
@@ -44,8 +38,8 @@ namespace Spring.Data
         public void SetUp()
         {
             //BasicConfigurator.Configure();
-            Console.WriteLine("Hello");
-            LogManager.Adapter = new ConsoleOutLoggerFactoryAdapter(new NameValueCollection());
+            //Console.WriteLine("Hello");
+            //LogManager.Adapter = new ConsoleOutLoggerFactoryAdapter(new NameValueCollection());
 
             //WELLKNOWN: NamespaceParserRegistry.RegisterParser(typeof(TxNamespaceParser));
             //WELLKNOWN: NamespaceParserRegistry.RegisterParser(typeof(AopNamespaceParser));

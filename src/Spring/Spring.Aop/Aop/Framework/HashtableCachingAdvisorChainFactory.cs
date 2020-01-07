@@ -1,7 +1,7 @@
-#region License
+﻿#region License
 
 /*
- * Copyright � 2002-2011 the original author or authors.
+ * Copyright © 2002-2011 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,10 @@
 
 #endregion
 
-#region Imports
-
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-
-#endregion
+using System.Runtime.Serialization;
 
 namespace Spring.Aop.Framework
 {
@@ -37,7 +34,14 @@ namespace Spring.Aop.Framework
     [Serializable]
     public sealed class HashtableCachingAdvisorChainFactory : IAdvisorChainFactory
     {
-        private readonly IDictionary<MethodInfo, IList<object>> methodCache = new Dictionary<MethodInfo, IList<object>>();
+        [NonSerialized]
+        private Dictionary<MethodInfo, IList<object>> methodCache = new Dictionary<MethodInfo, IList<object>>();
+
+        [OnDeserializing]
+        private void OnDeserializing(StreamingContext c)
+        {
+            methodCache = new Dictionary<MethodInfo, IList<object>>();
+        }
 
         /// <summary>
         /// Gets the list of <see cref="AopAlliance.Intercept.IInterceptor"/> and
@@ -59,14 +63,18 @@ namespace Spring.Aop.Framework
         /// </returns>
         public IList<object> GetInterceptors(IAdvised advised, object proxy, MethodInfo method, Type targetType)
         {
-            IList<object> cached;
-            if (!this.methodCache.TryGetValue(method, out cached))
+            if (!methodCache.TryGetValue(method, out var interceptors))
             {
-                // recalculate...
-                cached = AdvisorChainFactoryUtils.CalculateInterceptors(advised, proxy, method, targetType);
-                this.methodCache[method] = cached;
+                lock (methodCache)
+                {
+                    if (!methodCache.TryGetValue(method, out interceptors))
+                    {
+                        interceptors = AdvisorChainFactoryUtils.CalculateInterceptors(advised, proxy, method, targetType);
+                        methodCache[method] = interceptors;
+                    }
+                }
             }
-            return cached;
+            return interceptors;
         }
 
         /// <summary>

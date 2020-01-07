@@ -1,7 +1,7 @@
 #region License
 
 /*
- * Copyright © 2002-2011 the original author or authors.
+ * Copyright Â© 2002-2011 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,9 +22,7 @@
 
 using System;
 using System.Collections;
-using System.Configuration;
-using System.Text;
-using System.Threading;
+
 using Common.Logging;
 using Spring.Core;
 using Spring.Util;

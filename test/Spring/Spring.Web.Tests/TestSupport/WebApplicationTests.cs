@@ -44,13 +44,13 @@ namespace Spring.TestSupport
             this.relativePhysicalPath = relativePhysicalPath;
         }
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public virtual void TestFixtureSetup()
         {
             host = AspFixtureHost.CreateInstance(virtualPath, relativePhysicalPath, this);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public virtual void TestFixtureTearDown()
         {
             host = AspFixtureHost.ReleaseInstance(host);

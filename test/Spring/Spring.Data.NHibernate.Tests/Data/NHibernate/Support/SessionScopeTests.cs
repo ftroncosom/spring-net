@@ -21,10 +21,15 @@
 #region Imports
 
 using System;
+
+using FakeItEasy;
+
 using NHibernate;
 using NUnit.Framework;
-using Rhino.Mocks;
+
 using Spring.Transaction.Support;
+
+using static FakeItEasy.A;
 
 #endregion
 
@@ -37,7 +42,6 @@ namespace Spring.Data.NHibernate.Support
     [TestFixture]
     public class SessionScopeTests
     {
-        private MockRepository repository;
         private ISessionFactory expectedSessionFactory;
         private IInterceptor expectedEntityInterceptor;
         private bool expectedSingleSession;
@@ -46,9 +50,8 @@ namespace Spring.Data.NHibernate.Support
         [SetUp]
         public void SetUp()
         {
-            repository = new MockRepository();
-            expectedSessionFactory = (ISessionFactory)repository.CreateMock(typeof(ISessionFactory));
-            expectedEntityInterceptor = (IInterceptor)repository.CreateMock(typeof(IInterceptor));
+            expectedSessionFactory = Fake<ISessionFactory>();
+            expectedEntityInterceptor = Fake<IInterceptor>();
             expectedSingleSession = SessionScopeSettings.SINGLESESSION_DEFAULT;
             expectedDefaultFlushMode = SessionScopeSettings.FLUSHMODE_DEFAULT;
         }
@@ -74,14 +77,9 @@ namespace Spring.Data.NHibernate.Support
         [Test]
         public void CanCreateAndCloseSimpleCtor()
         {
-            using (repository.Ordered())
-            {
-                ISession session = (ISession) repository.CreateMock(typeof (ISession));
-                Expect.Call(expectedSessionFactory.OpenSession()).Return(session);
-                session.FlushMode = FlushMode.Never;
-                Expect.Call(session.Close()).Return(null);
-            }
-            repository.ReplayAll();            
+            ISession session = Fake<ISession>();
+            CallTo(() => expectedSessionFactory.OpenSession()).Returns(session);
+
             using (SessionScope scope = new SessionScope(expectedSessionFactory, true))
             {
                 // no op - just create & dispose
@@ -99,17 +97,21 @@ namespace Spring.Data.NHibernate.Support
                 Assert.IsNotNull(sessionHolder.Session);
                 scope.Close();
             }
-            repository.VerifyAll();
+
+            CallToSet(() => session.FlushMode).WhenArgumentsMatch(x => x.Get<FlushMode>(0) == FlushMode.Never).MustHaveHappenedOnceExactly();
+            CallTo(() => session.Close()).MustHaveHappenedOnceExactly();
         }
 
         [Test]
-        [ExpectedException(typeof(InvalidOperationException))]
         public void OpeningTwiceThrowsInvalidOperationException()
         {
-            using (SessionScope scope = new SessionScope(expectedSessionFactory, true))
+            Assert.Throws<InvalidOperationException>(() =>
             {
-                scope.Open();
-            }
+                using (SessionScope scope = new SessionScope(expectedSessionFactory, true))
+                {
+                    scope.Open();
+                }
+            });
         }
 
         [Test]
@@ -208,12 +210,9 @@ namespace Spring.Data.NHibernate.Support
         [Test]
         public void SingleSessionAppliesDefaultFlushModeOnOpenSessionAndClosesSession()
         {
-            ISession expectedSession = (ISession)repository.CreateMock(typeof(ISession));
+            ISession expectedSession = Fake<ISession>();
 
-            Expect.Call(expectedSessionFactory.OpenSession()).Return(expectedSession);
-            expectedSession.FlushMode = FlushMode.Auto;
-            Expect.Call(expectedSession.Close()).Return(null);
-            repository.ReplayAll();
+            CallTo(() => expectedSessionFactory.OpenSession()).Returns(expectedSession);
 
             SessionScope scope = null;
             using (scope = new SessionScope(expectedSessionFactory, null, true, FlushMode.Auto, true))
@@ -225,7 +224,8 @@ namespace Spring.Data.NHibernate.Support
             Assert.IsFalse(scope.IsOpen);
             Assert.IsFalse(TransactionSynchronizationManager.HasResource(expectedSessionFactory));
 
-            repository.VerifyAll();
+            CallToSet(() => expectedSession.FlushMode).WhenArgumentsMatch(x => x.Get<FlushMode>(0) == FlushMode.Auto).MustHaveHappenedOnceExactly();
+            CallTo(() => expectedSession.Close()).MustHaveHappenedOnceExactly();
         }
 
         [Test]
@@ -285,39 +285,29 @@ namespace Spring.Data.NHibernate.Support
         [Test]
         public void ResolvesEntityInterceptorOnEachOpen()
         {
-            TestSessionScopeSettings sss =
-                (TestSessionScopeSettings)repository.PartialMock(typeof(TestSessionScopeSettings), expectedSessionFactory);
-            ISession expectedSession = (ISession)repository.CreateMock(typeof(ISession));
+            TestSessionScopeSettings sss = Fake<TestSessionScopeSettings>(options => options
+                .CallsBaseMethods()
+                .WithArgumentsForConstructor(new[] {expectedSessionFactory})
+            );
+            ISession expectedSession = Fake<ISession>();
             sss.DefaultFlushMode = FlushMode.Never;
 
             SessionScope sc = new SessionScope(sss, false);
-
-            using (repository.Ordered())
-            {
-                Expect.Call(sss.DoResolveEntityInterceptor()).Return(expectedEntityInterceptor);
-                Expect.Call(expectedSessionFactory.OpenSession(expectedEntityInterceptor)).Return(expectedSession);
-                expectedSession.FlushMode = FlushMode.Never;
-                Expect.Call(expectedSession.Close()).Return(null);
-
-                Expect.Call(sss.DoResolveEntityInterceptor()).Return(expectedEntityInterceptor);
-                Expect.Call(expectedSessionFactory.OpenSession(expectedEntityInterceptor)).Return(expectedSession);
-                expectedSession.FlushMode = FlushMode.Never;
-                Expect.Call(expectedSession.Close()).Return(null);
-            }
-            repository.ReplayAll();
+            CallTo(() => sss.DoResolveEntityInterceptor()).Returns(expectedEntityInterceptor);
+            CallTo(() => expectedSessionFactory.OpenSession(expectedEntityInterceptor)).Returns(expectedSession);
 
             sc.Open();
-            SessionHolder sessionHolder = (SessionHolder)TransactionSynchronizationManager.GetResource(expectedSessionFactory);
+            SessionHolder sessionHolder = (SessionHolder) TransactionSynchronizationManager.GetResource(expectedSessionFactory);
             sessionHolder.ContainsSession(null); // force opening session
             sc.Close();
 
             sc.Open();
-            sessionHolder = (SessionHolder)TransactionSynchronizationManager.GetResource(expectedSessionFactory);
+            sessionHolder = (SessionHolder) TransactionSynchronizationManager.GetResource(expectedSessionFactory);
             sessionHolder.ContainsSession(null); // force opening session
             sc.Close();
 
-            repository.VerifyAll();
+            CallToSet(() => expectedSession.FlushMode).WhenArgumentsMatch(x => x.Get<FlushMode>(0) == FlushMode.Never).MustHaveHappenedTwiceExactly();
+            CallTo(() => expectedSession.Close()).MustHaveHappenedTwiceExactly();
         }
-
-     }
+    }
 }

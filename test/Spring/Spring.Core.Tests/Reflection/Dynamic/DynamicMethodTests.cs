@@ -75,7 +75,7 @@ namespace Spring.Reflection.Dynamic
             ieee.Officers["advisors"] = new Inventor[] { tesla, pupin }; // not historically accurate, but I need an array in the map ;-)
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TearDown()
         {
             //DynamicReflectionManager.SaveAssembly();
@@ -90,6 +90,7 @@ namespace Spring.Reflection.Dynamic
 
         public void RespectsPermissionsPublicMethod() { }
 
+#if !NETCOREAPP
         [Test]
         public void CanCreateWithRestrictedPermissions()
         {
@@ -130,6 +131,7 @@ namespace Spring.Reflection.Dynamic
             catch (MethodAccessException)
             { }
         }
+#endif
 
         [Test]
         public void TestInstanceMethods()

@@ -1,7 +1,7 @@
 #region License
 
 /*
- * Copyright © 2002-2011 the original author or authors.
+ * Copyright Â© 2002-2011 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,6 @@
 #endregion
 
 #region Imports
-
-using System;
 
 using NUnit.Framework;
 
@@ -40,7 +38,7 @@ namespace Spring.Aop.Framework
         /// <summary>
         /// The setup logic executed before the execution of this test fixture.
         /// </summary>
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void FixtureSetUp()
         {
         }
@@ -68,7 +66,7 @@ namespace Spring.Aop.Framework
         /// <summary>
         /// The tear down logic executed after the entire test fixture has executed.
         /// </summary>
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void FixtureTearDown()
         {
         }

@@ -98,7 +98,7 @@ namespace Spring.Objects.Factory.Xml
         /// embedded in the supplied <see cref="ParserContext"/>
         /// </summary>
         /// <param name="element">The element to be parsed.</param>
-        /// <param name="parserContext">TThe object encapsulating the current state of the parsing process.
+        /// <param name="parserContext">The object encapsulating the current state of the parsing process.
         /// Provides access to a IObjectDefinitionRegistry</param>
         /// <returns>The primary object definition.</returns>
         /// <remarks>
@@ -276,8 +276,8 @@ namespace Spring.Objects.Factory.Xml
                 case ObjectDefinitionConstants.TypeAttribute:
                     // we're wiring up to a static event exposed on a Type (class)
                     myHandler.Source = parserContext.ReaderContext.Reader.Domain == null ?
-                        (object)sourceAtt.Value :
-                        (object)TypeResolutionUtils.ResolveType(sourceAtt.Value);
+                        sourceAtt.Value :
+                        TypeResolutionUtils.ResolveType(sourceAtt.Value) as object;
                     break;
             }
             events.AddHandler(myHandler);
@@ -481,21 +481,49 @@ namespace Spring.Objects.Factory.Xml
                     autowire = childParserContext.ParserHelper.Defaults.Autowire;
                 }
                 od.AutowireMode = GetAutowireMode(autowire);
-                string primary = GetAttributeValue(element, ObjectDefinitionConstants.PrimaryAttribute);
-                if (primary == null)
+
+                string autowireCandidates = GetAttributeValue(element, ObjectDefinitionConstants.AutowireCandidateAttribute);
+                if (string.IsNullOrEmpty(autowireCandidates) || ObjectDefinitionConstants.DefaultValue.Equals(autowireCandidates))
                 {
-                    primary = "false";
+                    if (!string.IsNullOrEmpty(childParserContext.ParserHelper.Defaults.AutowireCandidates))
+                    {
+                        string[] patterns = childParserContext.ParserHelper.Defaults.AutowireCandidates.Split(',');
+                        od.IsAutowireCandidate = PatternMatchUtils.SimpleMatch(patterns, id);
+                    }
+                }
+                else
+                {
+                    od.IsAutowireCandidate = ObjectDefinitionConstants.TrueValue.Equals(autowireCandidates);
+                }
+                string primary = GetAttributeValue(element, ObjectDefinitionConstants.PrimaryAttribute);
+                if (string.IsNullOrEmpty(primary))
+                {
+                    primary = ObjectDefinitionConstants.FalseValue;
                 }
                 od.IsPrimary = IsTrueStringValue(primary);
                 string initMethodName = GetAttributeValue(element, ObjectDefinitionConstants.InitMethodAttribute);
-                if (StringUtils.HasText(initMethodName))
+                if (initMethodName != null)
                 {
-                    od.InitMethodName = initMethodName;
+                    if (StringUtils.HasText(initMethodName))
+                        od.InitMethodName = initMethodName;
+                }
+                else
+                {
+                    if (StringUtils.HasText(childParserContext.ParserHelper.Defaults.InitMethod))
+                        od.InitMethodName = childParserContext.ParserHelper.Defaults.InitMethod;
                 }
                 string destroyMethodName = GetAttributeValue(element, ObjectDefinitionConstants.DestroyMethodAttribute);
-                if (StringUtils.HasText(destroyMethodName))
+                if (destroyMethodName != null)
                 {
-                    od.DestroyMethodName = destroyMethodName;
+                    if (StringUtils.HasText(destroyMethodName))
+                    {
+                        od.DestroyMethodName = destroyMethodName;
+                    }
+                }
+                else
+                {
+                    if (StringUtils.HasText(childParserContext.ParserHelper.Defaults.DestroyMethod))
+                        od.DestroyMethodName = childParserContext.ParserHelper.Defaults.DestroyMethod;
                 }
                 if (element.HasAttribute(ObjectDefinitionConstants.SingletonAttribute))
                 {
@@ -667,7 +695,7 @@ namespace Spring.Objects.Factory.Xml
 
                 ObjectMetadataAttribute attribute = new ObjectMetadataAttribute(key, value);
                 attribute.Source = (XmlElement)node;
-                attributeAccessor.AddMetadataAttribute(attribute);                                
+                attributeAccessor.AddMetadataAttribute(attribute);
             }
         }
 
@@ -696,7 +724,7 @@ namespace Spring.Objects.Factory.Xml
                                     parserContext.ReaderContext.Resource, name,
                                     "Tag 'qualifier' must have a 'type' attribute");
             }
-            
+
             var qualifier = new AutowireCandidateQualifier(typeName);
             qualifier.Source = element;
 
@@ -1152,7 +1180,7 @@ namespace Spring.Objects.Factory.Xml
         /// </param>
         /// <returns>The set definition.</returns>
         protected Set ParseSetElement(XmlElement collectionEle, string name, ParserContext parserContext)
-        {           
+        {
             string elementTypeName = GetAttributeValue(collectionEle, "element-type");
             XmlNodeList nl = collectionEle.ChildNodes;
             ManagedSet target = new ManagedSet(nl.Count);
@@ -1528,7 +1556,7 @@ namespace Spring.Objects.Factory.Xml
 //        /// Returns the value of the element's attribute or <c>null</c>, if the attribute is not specified.
 //        /// </summary>
 //        /// <remarks>
-//        /// This is a helper for bypassing the behavior of <see cref="XmlElement.GetAttribute(string)"/> 
+//        /// This is a helper for bypassing the behavior of <see cref="XmlElement.GetAttribute(string)"/>
 //        /// to return <see cref="string.Empty"/> if the attribute does not exist.
 //        /// </remarks>
 //        protected static string GetAttributeValue(XmlElement element, string attributeName)
@@ -1541,11 +1569,11 @@ namespace Spring.Objects.Factory.Xml
 //        }
 //
 //        /// <summary>
-//        /// Returns the value of the element's attribute or <paramref name="defaultValue"/>, 
+//        /// Returns the value of the element's attribute or <paramref name="defaultValue"/>,
 //        /// if the attribute is not specified.
 //        /// </summary>
 //        /// <remarks>
-//        /// This is a helper for bypassing the behavior of <see cref="XmlElement.GetAttribute(string)"/> 
+//        /// This is a helper for bypassing the behavior of <see cref="XmlElement.GetAttribute(string)"/>
 //        /// to return <see cref="string.Empty"/> if the attribute does not exist.
 //        /// </remarks>
 //        protected static string GetAttributeValue(XmlElement element, string attributeName, string defaultValue)

@@ -18,13 +18,10 @@
 
 #endregion
 
-using System.Collections.Specialized;
 using NUnit.Framework;
-using Spring.Context;
+
 using Spring.Context.Support;
 using Spring.Objects.Factory.Attributes.ByValue;
-using Spring.Objects.Factory.Config;
-using Spring.Objects.Factory.Support;
 
 namespace Spring.Objects.Factory.Attributes
 {
@@ -36,6 +33,7 @@ namespace Spring.Objects.Factory.Attributes
         [SetUp]
         public void Setup()
         {
+            ContextRegistry.Clear();
             _applicationContext = new XmlApplicationContext(false, "assembly://Spring.Core.Tests/Spring.Objects.Factory.Attributes/ByValueObjects.xml");
             ContextRegistry.RegisterContext(_applicationContext);
         }

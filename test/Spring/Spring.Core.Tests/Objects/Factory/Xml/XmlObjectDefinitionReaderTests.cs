@@ -49,37 +49,35 @@ namespace Spring.Objects.Factory.Xml
         }
 
         [Test]
-        [ExpectedException(typeof(ObjectDefinitionStoreException))]
         public void LoadObjectDefinitionsWithNullResource()
         {
-            XmlObjectDefinitionReader reader
-                = new XmlObjectDefinitionReader(
-                    new DefaultListableObjectFactory());
-            reader.LoadObjectDefinitions((string)null);
+            XmlObjectDefinitionReader reader = new XmlObjectDefinitionReader(new DefaultListableObjectFactory());
+            Assert.Throws<ObjectDefinitionStoreException>(() => reader.LoadObjectDefinitions((string) null));
         }
 
         [Test]
-        [ExpectedException(typeof(ObjectDefinitionStoreException))]
         public void LoadObjectDefinitionsWithNonExistentResource()
         {
-            XmlObjectDefinitionReader reader
-                = new XmlObjectDefinitionReader(
-                    new DefaultListableObjectFactory());
-            reader.LoadObjectDefinitions(new ReadOnlyXmlTestResource("/dev/null"));
+            XmlObjectDefinitionReader reader = new XmlObjectDefinitionReader(new DefaultListableObjectFactory());
+            Assert.Throws<ObjectDefinitionStoreException>(() => reader.LoadObjectDefinitions(new ReadOnlyXmlTestResource("/dev/null")));
         }
 
         [Test]
         public void AutoRegistersAllWellknownNamespaceParsers_Common()
         {
-            string[] namespaces = {
+            string[] namespaces =
+            {
                 "http://www.springframework.net/tx",
                 "http://www.springframework.net/aop",
                 "http://www.springframework.net/db",
                 "http://www.springframework.net/database",
+#if !NETCOREAPP
                 "http://www.springframework.net/remoting",
                 "http://www.springframework.net/nms",
-                "http://www.springframework.net/validation",
-                "http://www.springframework.net/nvelocity" };
+                "http://www.springframework.net/nvelocity",
+#endif
+                "http://www.springframework.net/validation"
+            };
 
             foreach (string ns in namespaces)
             {
@@ -87,7 +85,8 @@ namespace Spring.Objects.Factory.Xml
                     string.Format("Parser for Namespace {0} could not be auto-registered.", ns));
             }
         }
-    
+
+#if !NETCOREAPP
         [Test]
         public void AutoRegistersAllWellknownNamespaceParsers_3_0()
         {
@@ -99,9 +98,10 @@ namespace Spring.Objects.Factory.Xml
                     string.Format("Parser for Namespace {0} could not be auto-registered.", ns));
             }
         }
+#endif
 
         [Test]
-        [Ignore] //this test cannot co-exist with AutoRegistersAllWellknownNamespaceParsers b/c that test will have already loaded the Spring.Data ass'y
+        [Ignore("this test cannot co-exist with AutoRegistersAllWellknownNamespaceParsers b/c that test will have already loaded the Spring.Data ass'y")]
         public void AutoRegistersWellknownNamespaceParser()
         {
             try
@@ -136,21 +136,19 @@ namespace Spring.Objects.Factory.Xml
         }
 
         [Test]
-        [ExpectedException(typeof(ObjectDefinitionStoreException))]
         public void ThrowsOnUnknownNamespaceUri()
         {
             NamespaceParserRegistry.Reset();
 
             DefaultListableObjectFactory of = new DefaultListableObjectFactory();
             XmlObjectDefinitionReader reader = new XmlObjectDefinitionReader(of);
-            reader.LoadObjectDefinitions(new StringResource(
+            Assert.Throws<ObjectDefinitionStoreException>(() => reader.LoadObjectDefinitions(new StringResource(
                                              @"<?xml version='1.0' encoding='UTF-8' ?>
 <objects xmlns='http://www.springframework.net' 
      xmlns:x='http://www.springframework.net/XXXX'>  
   <x:group id='tripValidator' />
 </objects>
-"));
-            Assert.Fail();
+")));
         }
 
 
@@ -279,17 +277,16 @@ namespace Spring.Objects.Factory.Xml
         #endregion
 
         [Test]
-        [ExpectedException(typeof(ObjectDefinitionStoreException))]
         public void ThrowsObjectDefinitionStoreExceptionOnErrorDuringObjectDefinitionRegistration()
         {
             DefaultListableObjectFactory of = new DefaultListableObjectFactory();
             XmlObjectDefinitionReader reader = new TestXmlObjectDefinitionReader(of);
-            reader.LoadObjectDefinitions(new StringResource(
+            Assert.Throws<ObjectDefinitionStoreException>(() => reader.LoadObjectDefinitions(new StringResource(
                 @"<?xml version='1.0' encoding='UTF-8' ?>
 <objects xmlns='http://www.springframework.net'>  
 	<object id='test2' type='Spring.Objects.TestObject, Spring.Core.Tests' />
 </objects>
-"));
+")));
         }
 
         [Test]
@@ -354,5 +351,37 @@ namespace Spring.Objects.Factory.Xml
             Assert.AreEqual("test1", od2.DependsOn[0]);
             Assert.AreEqual(DependencyCheckingMode.Simple, od2.DependencyCheck);
         }
+
+        [Test]
+        public void ParsesAutowireCandidate()
+        {
+            DefaultListableObjectFactory of = new DefaultListableObjectFactory();
+            XmlObjectDefinitionReader reader = new XmlObjectDefinitionReader(of);
+            reader.LoadObjectDefinitions(new StringResource(
+@"<?xml version='1.0' encoding='UTF-8' ?>
+<objects xmlns='http://www.springframework.net' default-autowire-candidates='test1*,test4*'>  
+	<object id='test1' type='Spring.Objects.TestObject, Spring.Core.Tests' />
+	<object id='test2' type='Spring.Objects.TestObject, Spring.Core.Tests' autowire-candidate='false' />
+	<object id='test3' type='Spring.Objects.TestObject, Spring.Core.Tests' autowire-candidate='true' />
+	<object id='test4' type='Spring.Objects.TestObject, Spring.Core.Tests' autowire-candidate='default' />
+	<object id='test5' type='Spring.Objects.TestObject, Spring.Core.Tests' autowire-candidate='default' />
+</objects>
+"));
+            var od = (AbstractObjectDefinition)of.GetObjectDefinition("test1");
+            Assert.That(od.IsAutowireCandidate, Is.True, "No attribute set should default to true");
+
+            od = (AbstractObjectDefinition)of.GetObjectDefinition("test2");
+            Assert.That(od.IsAutowireCandidate, Is.False, "Specifically attribute set to false should set to false");
+
+            od = (AbstractObjectDefinition)of.GetObjectDefinition("test3");
+            Assert.That(od.IsAutowireCandidate, Is.True, "Specifically attribute set to true should set to false");
+
+            od = (AbstractObjectDefinition)of.GetObjectDefinition("test4");
+            Assert.That(od.IsAutowireCandidate, Is.True, "Attribute set to default should check pattern and return true");
+
+            od = (AbstractObjectDefinition)of.GetObjectDefinition("test5");
+            Assert.That(od.IsAutowireCandidate, Is.False, "Attribute set to default should check pattern and return false");
+        }
+
     }
 }

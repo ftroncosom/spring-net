@@ -1,5 +1,3 @@
-#region License
-
 /*
  * Copyright 2002-2010 the original author or authors.
  *
@@ -15,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-#endregion
 
 using System;
 using System.Collections;
@@ -75,17 +71,14 @@ namespace Spring.Objects.Factory.Config
         /// </summary>
         public static readonly string DefaultPlaceholderSuffix = "}";
 
-        #region Fields
-
         private int order = Int32.MaxValue; // default: same as non-Ordered
 
+        private bool includeAncestors;
         private bool ignoreUnresolvablePlaceholders;
         private string placeholderPrefix = DefaultPlaceholderPrefix;
         private string placeholderSuffix = DefaultPlaceholderSuffix;
 
         private IList variableSourceList = new ArrayList();
-
-        #endregion
 
         /// <summary>
         /// Create a new instance without any variable sources
@@ -109,8 +102,6 @@ namespace Spring.Objects.Factory.Config
         {
             this.VariableSources = variableSources;
         }
-
-        #region Properties
 
         /// <summary>
         /// Sets the list of <see cref="IVariableSource"/>s that will be used to resolve placeholder names.
@@ -160,9 +151,10 @@ namespace Spring.Objects.Factory.Config
             set { ignoreUnresolvablePlaceholders = value; }
         }
 
-        #endregion
-
-        #region IObjectFactoryPostProcessor Members
+        public bool IncludeAncestors
+        {
+            set { includeAncestors = value;  }
+        }
 
         /// <summary>
         /// Modify the application context's internal object factory after its
@@ -210,10 +202,6 @@ namespace Spring.Objects.Factory.Config
             }
         }
 
-        #endregion
-
-        #region IOrdered Members
-
         /// <summary>
         /// Return the order value of this object, where a higher value means greater in
         /// terms of sorting.
@@ -225,8 +213,6 @@ namespace Spring.Objects.Factory.Config
             get { return order; }
             set { order = value; }
         }
-
-        #endregion
 
         /// <summary>
         /// Apply the property replacement using the specified <see cref="IVariableSource"/>s for all
@@ -246,11 +232,15 @@ namespace Spring.Objects.Factory.Config
             TextProcessor tp = new TextProcessor(this, compositeVariableSource);
             ObjectDefinitionVisitor visitor = new ObjectDefinitionVisitor(new ObjectDefinitionVisitor.ResolveHandler(tp.ParseAndResolveVariables));
 
-            IList<string> objectDefinitionNames = factory.GetObjectDefinitionNames();
+            var objectDefinitionNames = factory.GetObjectDefinitionNames(includeAncestors);
             for (int i = 0; i < objectDefinitionNames.Count; ++i)
             {
                 string name = objectDefinitionNames[i];
-                IObjectDefinition definition = factory.GetObjectDefinition( name );
+                IObjectDefinition definition = factory.GetObjectDefinition( name, includeAncestors );
+                
+                if (definition == null)
+                    continue;
+
                 try
                 {
                     visitor.VisitObjectDefinition( definition );
@@ -262,8 +252,6 @@ namespace Spring.Objects.Factory.Config
                 }
             }
         }
-
-        #region Helper class
 
         private class TextProcessor
         {
@@ -313,16 +301,12 @@ namespace Spring.Objects.Factory.Config
                             string resolvedValue = variableSource.ResolveVariable(placeholder);
                             resolvedValue = ParseAndResolveVariables(resolvedValue, visitedPlaceholders);
 
-                            #region Instrumentation
-
                             if (logger.IsDebugEnabled)
                             {
                                 logger.Debug(string.Format(
                                                  CultureInfo.InvariantCulture,
                                                  "Resolving placeholder '{0}' to '{1}'.", placeholder, resolvedValue));
                             }
-
-                            #endregion
 
                             if (resolvedValue == null
                                 && startIndex == 0
@@ -385,7 +369,5 @@ namespace Spring.Objects.Factory.Config
                 return false;
             }
         }
-
-        #endregion
     }
 }

@@ -1,7 +1,5 @@
-#region License
-
 /*
- * Copyright © 2002-2011 the original author or authors.
+ * Copyright ï¿½ 2002-2011 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,28 +14,25 @@
  * limitations under the License.
  */
 
-#endregion
-
-#region Imports
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading;
+#if !NETCOREAPP
 using System.Web.Services;
+#endif
+
 using Common.Logging;
 using Common.Logging.Simple;
+
+using FakeItEasy;
+
 using NUnit.Framework;
 
-using Rhino.Mocks;
-
-using Spring.Context;
-using Spring.Context.Support;
 using Spring.Core.IO;
 using Spring.Core.TypeResolution;
 using Spring.Expressions;
@@ -45,10 +40,8 @@ using Spring.Objects.Factory.Config;
 using Spring.Objects.Factory.Support;
 using Spring.Util;
 
-#endregion
-
 namespace Spring.Objects.Factory.Xml
-{   
+{
     /// <summary>
     /// Unit tests for the XmlObjectFactory class.
     /// </summary>
@@ -62,12 +55,10 @@ namespace Spring.Objects.Factory.Xml
     [TestFixture]
     public sealed class XmlObjectFactoryTests
     {
-        private MockRepository mocks;
-
         /// <summary>
         /// The setup logic executed before the execution of this test fixture.
         /// </summary>
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void FixtureSetUp()
         {
             // enable (null appender) logging, to ensure that the logging code is exercised...
@@ -78,14 +69,12 @@ namespace Spring.Objects.Factory.Xml
         [SetUp]
         public void SetUp()
         {
-            mocks = new MockRepository();
         }
 
         [Test]
-        [ExpectedException(typeof(ObjectDefinitionStoreException))]
         public void ReplacedMethodWithNoReplacerObjectNameSpecified()
         {
-            new StreamHelperDecorator(new StreamHelperCallback(_ReplacedMethodWithNoReplacerObjectNameSpecified)).Run();
+            Assert.Throws<ObjectDefinitionStoreException>(() => new StreamHelperDecorator(new StreamHelperCallback(_ReplacedMethodWithNoReplacerObjectNameSpecified)).Run());
         }
 
         private void _ReplacedMethodWithNoReplacerObjectNameSpecified(out Stream stream)
@@ -104,10 +93,9 @@ namespace Spring.Objects.Factory.Xml
         }
 
         [Test]
-        [ExpectedException(typeof(ObjectDefinitionStoreException))]
         public void ReplacedMethodWithNoMethodNameSpecified()
         {
-            new StreamHelperDecorator(new StreamHelperCallback(_ReplacedMethodWithNoMethodNameSpecified)).Run();
+            Assert.Throws<ObjectDefinitionStoreException>(() => new StreamHelperDecorator(new StreamHelperCallback(_ReplacedMethodWithNoMethodNameSpecified)).Run());
         }
 
         private void _ReplacedMethodWithNoMethodNameSpecified(out Stream stream)
@@ -126,10 +114,9 @@ namespace Spring.Objects.Factory.Xml
         }
 
         [Test]
-        [ExpectedException(typeof(ObjectDefinitionStoreException))]
         public void ValidatesReplacedMethodCorrectly()
         {
-            new StreamHelperDecorator(new StreamHelperCallback(_ValidatesReplacedMethodCorrectly)).Run();
+            Assert.Throws<ObjectDefinitionStoreException>(() => new StreamHelperDecorator(new StreamHelperCallback(_ValidatesReplacedMethodCorrectly)).Run());
         }
 
         private void _ValidatesReplacedMethodCorrectly(out Stream stream)
@@ -182,10 +169,9 @@ namespace Spring.Objects.Factory.Xml
         }
 
         [Test]
-        [ExpectedException(typeof(ObjectDefinitionStoreException))]
         public void ValidatesLookupMethodCorrectly()
         {
-            new StreamHelperDecorator(new StreamHelperCallback(_ValidatesLookupMethodCorrectly)).Run();
+            Assert.Throws<ObjectDefinitionStoreException>(() => new StreamHelperDecorator(new StreamHelperCallback(_ValidatesLookupMethodCorrectly)).Run());
         }
 
         private void _ValidatesLookupMethodCorrectly(out Stream stream)
@@ -204,10 +190,9 @@ namespace Spring.Objects.Factory.Xml
         }
 
         [Test]
-        [ExpectedException(typeof(ObjectDefinitionStoreException))]
         public void LookupMethodWithNoMethodNameSpecified()
         {
-            new StreamHelperDecorator(new StreamHelperCallback(_LookupMethodWithNoMethodNameSpecified)).Run();
+            Assert.Throws<ObjectDefinitionStoreException>(() => new StreamHelperDecorator(new StreamHelperCallback(_LookupMethodWithNoMethodNameSpecified)).Run());
         }
 
         private void _LookupMethodWithNoMethodNameSpecified(out Stream stream)
@@ -227,10 +212,9 @@ namespace Spring.Objects.Factory.Xml
         }
 
         [Test]
-        [ExpectedException(typeof(ObjectDefinitionStoreException))]
         public void LookupMethodWithNoTargetObjectNameSpecified()
         {
-            new StreamHelperDecorator(new StreamHelperCallback(_LookupMethodWithNoTargetObjectNameSpecified)).Run();
+            Assert.Throws<ObjectDefinitionStoreException>(() => new StreamHelperDecorator(new StreamHelperCallback(_LookupMethodWithNoTargetObjectNameSpecified)).Run());
         }
 
         private void _LookupMethodWithNoTargetObjectNameSpecified(out Stream stream)
@@ -314,10 +298,9 @@ namespace Spring.Objects.Factory.Xml
         }
 
         [Test]
-        [ExpectedException(typeof(ObjectDefinitionStoreException))]
         public void IfTypeAttributeIsPresentItMustNotBeTheEmptyStringValue()
         {
-            new StreamHelperDecorator(new StreamHelperCallback(_IfTypeAttributeIsPresentItMustNotBeTheEmptyStringValue)).Run();
+            Assert.Throws<ObjectDefinitionStoreException>(() => new StreamHelperDecorator(new StreamHelperCallback(_IfTypeAttributeIsPresentItMustNotBeTheEmptyStringValue)).Run());
         }
 
         private void _IfTypeAttributeIsPresentItMustNotBeTheEmptyStringValue(out Stream stream)
@@ -334,10 +317,9 @@ namespace Spring.Objects.Factory.Xml
         }
 
         [Test]
-        [ExpectedException(typeof(ObjectDefinitionStoreException))]
         public void IfTypeAttributeIsPresentItMustNotBeAnOnlyWhitespaceStringValue()
         {
-            new StreamHelperDecorator(new StreamHelperCallback(_IfTypeAttributeIsPresentItMustNotBeAnOnlyWhitespaceStringValue)).Run();
+            Assert.Throws<ObjectDefinitionStoreException>(() => new StreamHelperDecorator(new StreamHelperCallback(_IfTypeAttributeIsPresentItMustNotBeAnOnlyWhitespaceStringValue)).Run());
         }
 
         private void _IfTypeAttributeIsPresentItMustNotBeAnOnlyWhitespaceStringValue(out Stream stream)
@@ -408,13 +390,11 @@ namespace Spring.Objects.Factory.Xml
         }
 
         [Test]
-        [ExpectedException(typeof(ObjectCreationException))]
         public void BadParentReference()
         {
             IResource resource = new ReadOnlyXmlTestResource("wellformed-but-bad.xml", GetType());
             XmlObjectFactory xof = new XmlObjectFactory(resource);
-
-            xof.GetObject("no.parent.factory");
+            Assert.Throws<ObjectCreationException>(() => xof.GetObject("no.parent.factory"));
         }
 
         [Test]
@@ -459,7 +439,7 @@ namespace Spring.Objects.Factory.Xml
 </objects>";
             stream = new MemoryStream(Encoding.UTF8.GetBytes(xml));
             XmlObjectFactory factory = new XmlObjectFactory(new InputStreamResource(stream, string.Empty));
-            IList<string> names = factory.GetObjectDefinitionNames();
+            var names = factory.GetObjectDefinitionNames();
             // mmm, how is one to test this? I have no idea what the generated name is...
             Assert.AreEqual(2, names.Count, "Should have got two object names, one of which is autogenerated.");
         }
@@ -493,11 +473,10 @@ namespace Spring.Objects.Factory.Xml
         }
 
         [Test]
-        [ExpectedException(typeof(ObjectDefinitionStoreException))]
         public void ImportsExternalResourcesBailsOnNonExistentResource()
         {
             IResource resource = new ReadOnlyXmlTestResource("bad-external-resources.xml", GetType());
-            new XmlObjectFactory(resource);
+            Assert.Throws<ObjectDefinitionStoreException>(() => new XmlObjectFactory(resource));
         }
 
         [Test]
@@ -587,25 +566,25 @@ namespace Spring.Objects.Factory.Xml
             xof.GetObject("innerObject");
 
             TestObject hasInnerObjects = (TestObject) xof.GetObject("hasInnerObjects");
-            Assert.AreEqual(5, hasInnerObjects.Age);           
+            Assert.AreEqual(5, hasInnerObjects.Age);
             TestObject inner1 = (TestObject) hasInnerObjects.Spouse;
-            Assert.IsNotNull(inner1);            
-            Assert.AreEqual("Spring.Objects.TestObject#", inner1.ObjectName.Substring(0, inner1.ObjectName.IndexOf("#")+1));            
+            Assert.IsNotNull(inner1);
+            Assert.AreEqual("Spring.Objects.TestObject#", inner1.ObjectName.Substring(0, inner1.ObjectName.IndexOf("#")+1));
             Assert.AreEqual("inner1", inner1.Name);
             Assert.AreEqual(6, inner1.Age);
-            
-            
+
+
             Assert.IsNotNull(hasInnerObjects.Friends);
             IList friends = (IList) hasInnerObjects.Friends;
             Assert.AreEqual(2, friends.Count);
             DerivedTestObject inner2 = (DerivedTestObject) friends[0];
             Assert.AreEqual("inner2", inner2.Name);
             Assert.AreEqual(7, inner2.Age);
-            Assert.AreEqual("Spring.Objects.DerivedTestObject#", inner2.ObjectName.Substring(0, inner2.ObjectName.IndexOf("#") + 1));      
+            Assert.AreEqual("Spring.Objects.DerivedTestObject#", inner2.ObjectName.Substring(0, inner2.ObjectName.IndexOf("#") + 1));
             TestObject innerFactory = (TestObject) friends[1];
             Assert.AreEqual(DummyFactory.SINGLETON_NAME, innerFactory.Name);
 
-            
+
             Assert.IsNotNull(hasInnerObjects.SomeMap);
             Assert.IsFalse((hasInnerObjects.SomeMap.Count == 0));
             TestObject inner3 = (TestObject) hasInnerObjects.SomeMap["someKey"];
@@ -650,11 +629,11 @@ namespace Spring.Objects.Factory.Xml
             Assert.AreEqual("inner3", inner3.Name);
             Assert.AreEqual(8, inner3.Age);
             xof.Dispose();
-            
+
             Assert.IsFalse(inner2.WasDestroyed());
             Assert.IsFalse(innerFactory.Name == null);
             Assert.IsFalse(innerFriendOfAFriend.WasDestroyed());
-            
+
         }
 
         [Test]
@@ -675,7 +654,7 @@ namespace Spring.Objects.Factory.Xml
         public void SingletonInheritanceFromParentFactorySingletonUsingCtor()
         {
             XmlObjectFactory parent = new XmlObjectFactory(new ReadOnlyXmlTestResource("parent.xml", GetType()));
-            XmlObjectFactory child = new XmlObjectFactory(new ReadOnlyXmlTestResource("child.xml", GetType()), parent);                                                                           
+            XmlObjectFactory child = new XmlObjectFactory(new ReadOnlyXmlTestResource("child.xml", GetType()), parent);
             TestObject inherits = (TestObject)child.GetObject("inheritsFromParentFactoryUsingCtor");
             // Name property value is overriden
             Assert.IsTrue(inherits.Name.Equals("child-name"));
@@ -751,12 +730,11 @@ namespace Spring.Objects.Factory.Xml
         /// If a singleton does this the factory will fail to load.
         /// </summary>
         [Test]
-        [ExpectedException(typeof(NoSuchObjectDefinitionException))]
         public void BogusParentageFromParentFactory()
         {
             XmlObjectFactory parent = new XmlObjectFactory(new ReadOnlyXmlTestResource("parent.xml", GetType()));
             XmlObjectFactory child = new XmlObjectFactory(new ReadOnlyXmlTestResource("child.xml", GetType()), parent);
-            child.GetObject("bogusParent");
+            Assert.Throws<NoSuchObjectDefinitionException>(() => child.GetObject("bogusParent"));
         }
 
         /// <summary>
@@ -787,7 +765,7 @@ namespace Spring.Objects.Factory.Xml
 
             // abstract objects should not match
             //TODO add overloaded GetObjectOfType with 1 arg
-            IDictionary<string, object> tbs = parent.GetObjectsOfType(typeof(TestObject), true, true);
+            var tbs = parent.GetObjectsOfType(typeof(TestObject), true, true);
             Assert.AreEqual(2, tbs.Count);
             Assert.IsTrue(tbs.ContainsKey("inheritedTestObjectPrototype"));
             Assert.IsTrue(tbs.ContainsKey("inheritedTestObjectSingleton"));
@@ -884,6 +862,26 @@ namespace Spring.Objects.Factory.Xml
             Assert.AreEqual(14, in_Renamed.Num);
         }
 
+        [Test]
+        public void DefaultInitMethodIsInvoked()
+        {
+            IResource resource = new ReadOnlyXmlTestResource("default-initializers.xml", GetType());
+            XmlObjectFactory xof = new XmlObjectFactory(resource);
+            DoubleInitializer in_Renamed = (DoubleInitializer)xof.GetObject("init-method1");
+            // Initializer should have doubled value
+            Assert.AreEqual(14, in_Renamed.Num);
+        }
+
+        [Test]
+        public void DefaultInitMethodDisabled()
+        {
+            IResource resource = new ReadOnlyXmlTestResource("default-initializers.xml", GetType());
+            XmlObjectFactory xof = new XmlObjectFactory(resource);
+            DoubleInitializer in_Renamed = (DoubleInitializer)xof.GetObject("init-method2");
+            // Initializer should have doubled value
+            Assert.AreEqual(7, in_Renamed.Num);
+        }
+
         /// <summary>
         /// Test that if a custom initializer throws an exception, it's handled correctly.
         /// </summary>
@@ -904,13 +902,11 @@ namespace Spring.Objects.Factory.Xml
         }
 
         [Test]
-        [ExpectedException(typeof(ObjectCreationException))]
         public void NoSuchInitMethod()
         {
             IResource resource = new ReadOnlyXmlTestResource("initializers.xml", GetType());
             XmlObjectFactory xof = new XmlObjectFactory(resource);
-            xof.GetObject("init-method3");
-            Assert.Fail();
+            Assert.Throws<ObjectCreationException>(() => xof.GetObject("init-method3"));
         }
 
         /// <summary>
@@ -936,21 +932,45 @@ namespace Spring.Objects.Factory.Xml
         }
 
         [Test]
+        public void DefaultDestroyMethodInvoked()
+        {
+            IResource resource = new ReadOnlyXmlTestResource("default-destroy-methods.xml", GetType());
+            XmlObjectFactory xof = new XmlObjectFactory(resource);
+            xof.PreInstantiateSingletons();
+            DefaultDestroyer dd = (DefaultDestroyer)xof.GetObject("destroy-method1");
+            Assert.IsTrue(!dd.customDestroyed);
+            xof.Dispose();
+            Assert.IsTrue(dd.customDestroyed);
+        }
+
+        [Test]
+        public void DefaultDestroyMethodDisabled()
+        {
+            IResource resource = new ReadOnlyXmlTestResource("default-destroy-methods.xml", GetType());
+            XmlObjectFactory xof = new XmlObjectFactory(resource);
+            xof.PreInstantiateSingletons();
+            DefaultDestroyer dd = (DefaultDestroyer)xof.GetObject("destroy-method2");
+            Assert.IsTrue(!dd.customDestroyed);
+            xof.Dispose();
+            Assert.IsTrue(!dd.customDestroyed);
+        }
+
+        [Test]
         public void MultiThreadedLazyInit()
         {
             IResource resource = new ReadOnlyXmlTestResource("lazy-init-multithreaded.xml", GetType());
             XmlObjectFactory xof = new XmlObjectFactory(resource);
-            
+
             LazyWorker lw1 = new LazyWorker(xof);
             LazyWorker lw2 = new LazyWorker(xof);
-            Thread thread1 = new Thread(new ThreadStart(lw1.DoWork));
-            Thread thread2 = new Thread(new ThreadStart(lw2.DoWork));
-                
+            Thread thread1 = new Thread(lw1.DoWork);
+            Thread thread2 = new Thread(lw2.DoWork);
+
             thread1.Start();
             Thread.Sleep(1000);
             thread2.Start();
             thread1.Join();
-            thread2.Join();            
+            thread2.Join();
             Assert.AreEqual(typeof(LazyTestObject), lw1.ObjectFromContext.GetType());
             Assert.AreEqual(typeof(LazyTestObject), lw2.ObjectFromContext.GetType());
             Assert.AreEqual(1, LazyTestObject.Count);
@@ -1000,13 +1020,11 @@ namespace Spring.Objects.Factory.Xml
                 Assert.IsTrue(ex.InnerException is FormatException);
             }
         }
-        
+
         [Test]
-        [ExpectedException(typeof(ObjectDefinitionStoreException))]
         public void NoSuchXmlFile()
         {
-            new XmlObjectFactory(
-                new ReadOnlyXmlTestResource("missing.xml", GetType()));
+            Assert.Throws<ObjectDefinitionStoreException>(() => new XmlObjectFactory(new ReadOnlyXmlTestResource("missing.xml", GetType())));
         }
 
         [Test]
@@ -1032,7 +1050,7 @@ namespace Spring.Objects.Factory.Xml
             XmlObjectDefinitionReader reader = new XmlObjectDefinitionReader(xof, null);
             try
             {
-                reader.LoadObjectDefinitions(new ReadOnlyXmlTestResource("invalid.xml", GetType()));  
+                reader.LoadObjectDefinitions(new ReadOnlyXmlTestResource("invalid.xml", GetType()));
                 Assert.Fail("Should have thrown XmlObjectDefinitionStoreException");
             }
             catch (ObjectDefinitionStoreException e)
@@ -1042,23 +1060,17 @@ namespace Spring.Objects.Factory.Xml
         }
 
         [Test]
-        [ExpectedException(typeof(UnsatisfiedDependencyException))]
         public void UnsatisfiedObjectDependencyCheck()
         {
-            XmlObjectFactory xof
-                = new XmlObjectFactory(
-                    new ReadOnlyXmlTestResource(
-                        "unsatisfiedObjectDependencyCheck.xml", GetType()));
-            xof.GetObject("a", typeof(DependenciesObject));
+            XmlObjectFactory xof = new XmlObjectFactory(new ReadOnlyXmlTestResource("unsatisfiedObjectDependencyCheck.xml", GetType()));
+            Assert.Throws<UnsatisfiedDependencyException>(() => xof.GetObject("a", typeof(DependenciesObject)));
         }
 
         [Test]
-        [ExpectedException(typeof(UnsatisfiedDependencyException))]
         public void UnsatisfiedSimpleDependencyCheck()
         {
-            XmlObjectFactory xof =
-                new XmlObjectFactory(new ReadOnlyXmlTestResource("unsatisfiedSimpleDependencyCheck.xml", GetType()));
-            xof.GetObject("a", typeof(DependenciesObject));
+            XmlObjectFactory xof = new XmlObjectFactory(new ReadOnlyXmlTestResource("unsatisfiedSimpleDependencyCheck.xml", GetType()));
+            Assert.Throws<UnsatisfiedDependencyException>(() => xof.GetObject("a", typeof(DependenciesObject)));
         }
 
         [Test]
@@ -1083,14 +1095,10 @@ namespace Spring.Objects.Factory.Xml
         }
 
         [Test]
-        [ExpectedException(typeof(UnsatisfiedDependencyException))]
         public void UnsatisfiedAllDependencyCheck()
         {
-            XmlObjectFactory xof
-                = new XmlObjectFactory(
-                    new ReadOnlyXmlTestResource(
-                        "unsatisfiedAllDependencyCheckMissingObjects.xml", GetType()));
-            xof.GetObject("a", typeof(DependenciesObject));
+            XmlObjectFactory xof= new XmlObjectFactory(new ReadOnlyXmlTestResource("unsatisfiedAllDependencyCheckMissingObjects.xml", GetType()));
+            Assert.Throws<UnsatisfiedDependencyException>(() => xof.GetObject("a", typeof(DependenciesObject)));
         }
 
         [Test]
@@ -1294,28 +1302,23 @@ namespace Spring.Objects.Factory.Xml
         }
 
         [Test]
-        [ExpectedException(typeof(ObjectCreationException))]
         public void ThrowsExceptionOnTooManyArguments()
         {
-            XmlObjectFactory xof = new XmlObjectFactory(
-                new ReadOnlyXmlTestResource("constructor-arg.xml", GetType()));
-            xof.GetObject("rod7", typeof(ConstructorDependenciesObject));
+            XmlObjectFactory xof = new XmlObjectFactory(new ReadOnlyXmlTestResource("constructor-arg.xml", GetType()));
+            Assert.Throws<ObjectCreationException>(() => xof.GetObject("rod7", typeof(ConstructorDependenciesObject)));
         }
 
         [Test]
-        [ExpectedException(typeof(UnsatisfiedDependencyException))]
         public void ThrowsExceptionOnAmbiguousResolution()
         {
             XmlObjectFactory xof = new XmlObjectFactory(new ReadOnlyXmlTestResource("constructor-arg.xml", GetType()));
-            xof.GetObject("rod8", typeof(ConstructorDependenciesObject));
+            Assert.Throws<UnsatisfiedDependencyException>(() => xof.GetObject("rod8", typeof(ConstructorDependenciesObject)));
         }
 
         [Test]
-        [ExpectedException(typeof(ObjectDefinitionStoreException))]
         public void FactoryObjectDefinedAsPrototype()
         {
-            new XmlObjectFactory(
-                new ReadOnlyXmlTestResource("invalid-factory.xml", GetType()));
+            Assert.Throws<ObjectDefinitionStoreException>(() => new XmlObjectFactory(new ReadOnlyXmlTestResource("invalid-factory.xml", GetType())));
         }
 
         [Test]
@@ -1351,6 +1354,7 @@ namespace Spring.Objects.Factory.Xml
             }
         }
 
+#if !NETCOREAPP
         [Test]
         public void AnObjectCanBeIstantiatedWithANotFullySpecifiedAssemblyName()
         {
@@ -1359,6 +1363,7 @@ namespace Spring.Objects.Factory.Xml
             IDbConnection connection = (IDbConnection) xof.GetObject("connectionNotFullySpecified");
             Assert.IsNotNull(connection);
         }
+#endif
 
         [Test]
         public void ResourceAndInputStream()
@@ -1518,15 +1523,11 @@ namespace Spring.Objects.Factory.Xml
             //FactoryMethods fm = (FactoryMethods) factory.GetObject("instanceFactoryMethodOverloads", new object[] {row});
             // Assert.AreEqual("DataRowCtor", fm.Name);
 
-            IDataRecord dataRecord = (IDataRecord) mocks.DynamicMock(typeof(IDataRecord));
+            IDataRecord dataRecord = A.Fake<IDataRecord>();
             FactoryMethods fm = (FactoryMethods)factory.GetObject("instanceFactoryMethodOverloads", new object[] { dataRecord });
             Assert.AreEqual("DataRecordCtor", fm.Name);
-
-
         }
 
-
-        #region Private Helper Methods for InstanceFactoryMethodWithOverloadedargs
         private DataTable MakeNamesTable()
         {
             // Create a new DataTable titled 'Names.'
@@ -1559,15 +1560,13 @@ namespace Spring.Objects.Factory.Xml
             return namesTable;
         }
 
-        #endregion
         [Test]
-        [ExpectedException(typeof(ObjectCreationException))]
         public void FactoryMethodNoMatchingStaticMethod()
         {
             DefaultListableObjectFactory factory = new DefaultListableObjectFactory();
             XmlObjectDefinitionReader reader = new XmlObjectDefinitionReader(factory);
             reader.LoadObjectDefinitions(new ReadOnlyXmlTestResource("factory-methods.xml", GetType()));
-            factory.GetObject("noMatchPrototype");
+            Assert.Throws<ObjectCreationException>(() => factory.GetObject("noMatchPrototype"));
         }
 
         [Test]
@@ -1661,28 +1660,26 @@ namespace Spring.Objects.Factory.Xml
         }
 
         [Test]
-        [ExpectedException(typeof(ObjectCreationException))]
         public void BailsOnRubbishFieldRetrievingFactoryMethod()
         {
             DefaultListableObjectFactory factory = new DefaultListableObjectFactory();
             XmlObjectDefinitionReader reader = new XmlObjectDefinitionReader(factory);
             reader.LoadObjectDefinitions(new ReadOnlyXmlTestResource("field-props-factory.xml", GetType()));
-            factory.GetObject("rubbishField", typeof(MyTestObject));
+            Assert.Throws<ObjectCreationException>(() => factory.GetObject("rubbishField", typeof(MyTestObject)));
         }
 
         [Test]
-        [ExpectedException(typeof(ObjectCreationException))]
         public void BailsOnRubbishPropertyRetrievingFactoryMethod()
         {
             DefaultListableObjectFactory factory = new DefaultListableObjectFactory();
             XmlObjectDefinitionReader reader = new XmlObjectDefinitionReader(factory);
             reader.LoadObjectDefinitions(new ReadOnlyXmlTestResource("field-props-factory.xml", GetType()));
-            factory.GetObject("rubbishProperty", typeof(MyTestObject));
+            Assert.Throws<ObjectCreationException>(() => factory.GetObject("rubbishProperty", typeof(MyTestObject)));
         }
 
         /// <summary>
         /// Test creating an object using its 1 arg boolean constructor (amongst
-        /// others) by specifying the constructor arguments type and 
+        /// others) by specifying the constructor arguments type and
         /// not its index number.
         /// </summary>
         [Test]
@@ -1752,11 +1749,9 @@ namespace Spring.Objects.Factory.Xml
         }
 
         [Test]
-        [ExpectedException(typeof(ObjectDefinitionStoreException))]
         public void BailsWhenBothNameAndIndexAttributesAreAppliedToASingleCtorArg()
         {
-            new XmlObjectFactory(
-                new ReadOnlyXmlTestResource("bad-named-constructor-arg.xml", GetType()));
+            Assert.Throws<ObjectDefinitionStoreException>(() => new XmlObjectFactory(new ReadOnlyXmlTestResource("bad-named-constructor-arg.xml", GetType())));
         }
 
         [Test]
@@ -1831,11 +1826,12 @@ namespace Spring.Objects.Factory.Xml
             factory.GetObject("foo");
         }
 
+#if !NETCOREAPP
         [Test]
         public void TestExpressionAttribute()
         {
             TypeRegistry.RegisterType("WebMethod", typeof(WebMethodAttribute));
-            
+
             IResource resource = new ReadOnlyXmlTestResource("expressions.xml", GetType());
             XmlObjectFactory xof = new XmlObjectFactory(resource);
 
@@ -1872,8 +1868,7 @@ namespace Spring.Objects.Factory.Xml
             Assert.AreEqual("My First Web Method", ((WebMethodAttribute)eto.SomeDictionary["method1"]).Description);
             Assert.AreEqual("My Second Web Method", ((WebMethodAttribute)eto.SomeDictionary["method2"]).Description);
         }
-
-        #region Helper Classes
+#endif
 
         public class LazyWorker
         {
@@ -1881,17 +1876,14 @@ namespace Spring.Objects.Factory.Xml
             private Object objectFromContext;
             public LazyWorker(XmlObjectFactory xof)
             {
-               this.xof = xof;        
+               this.xof = xof;
             }
             public void DoWork()
             {
                 objectFromContext = xof.GetObject("lazyObject");
             }
 
-            public Object ObjectFromContext
-            {
-                get { return objectFromContext; }
-            }
+            public Object ObjectFromContext => objectFromContext;
         }
         public sealed class MyTestObject
         {
@@ -1899,20 +1891,17 @@ namespace Spring.Objects.Factory.Xml
 
             public Type[] Types
             {
-                get { return _types; }
-                set { _types = value; }
+                get => _types;
+                set => _types = value;
             }
 
             public CultureInfo Culture
             {
-                get { return _culture; }
-                set { _culture = value; }
+                get => _culture;
+                set => _culture = value;
             }
 
-            public CultureInfo MyDefaultCulture
-            {
-                get { return Default; }
-            }
+            public CultureInfo MyDefaultCulture => Default;
 
             private Type[] _types;
             private CultureInfo _culture;
@@ -1930,8 +1919,8 @@ namespace Spring.Objects.Factory.Xml
         {
             public int Num
             {
-                get { return num; }
-                set { num = value; }
+                get => num;
+                set => num = value;
             }
 
             private int num;
@@ -1939,6 +1928,16 @@ namespace Spring.Objects.Factory.Xml
             public void Init()
             {
                 this.num *= 2;
+            }
+        }
+
+        public class DefaultDestroyer
+        {
+            public bool customDestroyed;
+
+            public void CustomDestroy()
+            {
+                customDestroyed = true;
             }
         }
 
@@ -2050,9 +2049,7 @@ namespace Spring.Objects.Factory.Xml
                 destroyed = true;
             }
         }
-
-        #endregion
     }
 
-  
+
 }

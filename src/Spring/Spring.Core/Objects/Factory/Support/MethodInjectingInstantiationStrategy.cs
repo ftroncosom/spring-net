@@ -1,7 +1,7 @@
 #region License
 
 /*
- * Copyright © 2002-2011 the original author or authors.
+ * Copyright Â© 2002-2011 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,11 +25,8 @@ using System.Collections;
 using System.Globalization;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Text;
-using Spring.Collections;
-using Spring.Core;
+
 using Spring.Util;
-using Spring.Reflection.Dynamic;
 
 #endregion
 
@@ -296,7 +293,7 @@ namespace Spring.Objects.Factory.Support
 				DefineConstructors(typeBuilder);
 				DefineProperties(typeBuilder);
 				DefineMethods(typeBuilder);
-				return typeBuilder.CreateType();
+				return typeBuilder.CreateTypeInfo();
 			}
 
 			private Type BaseType

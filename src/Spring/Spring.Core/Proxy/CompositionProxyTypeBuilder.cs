@@ -24,8 +24,6 @@ using System;
 using System.Reflection;
 using System.Reflection.Emit;
 
-using Spring.Util;
-
 #endregion
 
 namespace Spring.Proxy
@@ -129,7 +127,7 @@ namespace Spring.Proxy
 
             ImplementCustom(typeBuilder);
 
-            return typeBuilder.CreateType();
+            return typeBuilder.CreateTypeInfo();
         }
 
         /// <summary>
@@ -197,8 +195,8 @@ namespace Spring.Proxy
             {
                 il.Emit(OpCodes.Ldarg_S, i);
             }
-            il.Emit(OpCodes.Newobj, TargetType.GetConstructor(
-                ReflectionUtils.GetParameterTypes(constructor.GetParameters())));
+
+            il.Emit(OpCodes.Newobj, constructor);
             il.Emit(OpCodes.Stfld, targetInstance);
         }
 

@@ -1,7 +1,7 @@
 #region License
 
 /*
- * Copyright © 2002-2011 the original author or authors.
+ * Copyright ï¿½ 2002-2011 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,14 +18,9 @@
 
 #endregion
 
-#region Imports
-
 using Apache.NMS;
-using Apache.NMS.ActiveMQ.Commands;
+using FakeItEasy;
 using NUnit.Framework;
-using Rhino.Mocks;
-
-#endregion
 
 namespace Spring.Messaging.Nms.Connections
 {
@@ -36,23 +31,10 @@ namespace Spring.Messaging.Nms.Connections
     [TestFixture]
     public class CachingConnectionFactoryTests
     {
-        private MockRepository mocks;
-
-        [SetUp]
-        public void Setup()
-        {
-            mocks = new MockRepository();
-        }
-
         [Test]
         public void CachedSession()
         {
-            IConnectionFactory connectionFactory = (IConnectionFactory)mocks.CreateMock(typeof(IConnectionFactory));
-            IConnection connection = new TestConnection();
-
-            Expect.Call(connectionFactory.CreateConnection()).Return(connection).Repeat.Once();
-
-            mocks.ReplayAll();
+            IConnectionFactory connectionFactory = CreateConnectionFactory();
 
             CachingConnectionFactory cachingConnectionFactory = new CachingConnectionFactory();
             cachingConnectionFactory.TargetConnectionFactory = connectionFactory;
@@ -78,8 +60,6 @@ namespace Spring.Messaging.Nms.Connections
 
             Assert.AreEqual(1, testSession.CreatedCount);
             Assert.AreEqual(0, testSession.CloseCount);
-           
-            mocks.VerifyAll();
 
             //don't explicitly call close on 
         }
@@ -96,12 +76,7 @@ namespace Spring.Messaging.Nms.Connections
         [Test]
         public void CachedSessionTwoRequests()
         {
-            IConnectionFactory connectionFactory = (IConnectionFactory)mocks.CreateMock(typeof(IConnectionFactory));
-            IConnection connection = new TestConnection();
-
-            Expect.Call(connectionFactory.CreateConnection()).Return(connection).Repeat.Once();
-
-            mocks.ReplayAll();
+            IConnectionFactory connectionFactory = CreateConnectionFactory();
 
             CachingConnectionFactory cachingConnectionFactory = new CachingConnectionFactory();
             cachingConnectionFactory.TargetConnectionFactory = connectionFactory;
@@ -131,10 +106,6 @@ namespace Spring.Messaging.Nms.Connections
             Assert.AreSame(session1, session3);
             Assert.AreEqual(1, testSession1.CreatedCount);
             Assert.AreEqual(0, testSession1.CloseCount);
-
-            mocks.VerifyAll();
-
-
         }
 
         /// <summary>
@@ -145,14 +116,8 @@ namespace Spring.Messaging.Nms.Connections
         [Test]
         public void CachedMessageProducer()
         {
-            IConnectionFactory connectionFactory = (IConnectionFactory)mocks.CreateMock(typeof(IConnectionFactory));
-            IConnection connection = new TestConnection();
-
-            Expect.Call(connectionFactory.CreateConnection()).Return(connection).Repeat.Once();
+            IConnectionFactory connectionFactory = CreateConnectionFactory();
             
-            mocks.ReplayAll();
-
-
             CachingConnectionFactory cachingConnectionFactory = new CachingConnectionFactory();
             cachingConnectionFactory.TargetConnectionFactory = connectionFactory;
             IConnection con1 = cachingConnectionFactory.CreateConnection();
@@ -168,20 +133,12 @@ namespace Spring.Messaging.Nms.Connections
             TestMessageProducer tmpB = GetTestMessageProducer(producerB);
             
             Assert.AreSame(tmpA, tmpB);
-
-            mocks.VerifyAll();
         }
 
         [Test]
         public void CachedMessageProducerTwoRequests()
         {
-            IConnectionFactory connectionFactory = (IConnectionFactory)mocks.CreateMock(typeof(IConnectionFactory));
-            IConnection connection = new TestConnection();
-
-            Expect.Call(connectionFactory.CreateConnection()).Return(connection).Repeat.Once();
-
-            mocks.ReplayAll();
-
+            IConnectionFactory connectionFactory = CreateConnectionFactory();
 
             CachingConnectionFactory cachingConnectionFactory = new CachingConnectionFactory();
             cachingConnectionFactory.TargetConnectionFactory = connectionFactory;
@@ -205,11 +162,9 @@ namespace Spring.Messaging.Nms.Connections
             TestMessageProducer tmpC = GetTestMessageProducer(producerC);
 
             Assert.AreSame(tmpA, tmpC);
-
-            mocks.VerifyAll();
         }
 
-
+#if NETFRAMEWORK
         /// <summary>
         /// Tests that the same underlying instance of the message consumer is returned after
         /// creating a session, creating the consumer (A), closing the session, and creating another
@@ -218,21 +173,14 @@ namespace Spring.Messaging.Nms.Connections
         [Test]
         public void CachedMessageConsumer()
         {
-            IConnectionFactory connectionFactory = (IConnectionFactory)mocks.CreateMock(typeof(IConnectionFactory));
-            IConnection connection = new TestConnection();
-            
-
-            Expect.Call(connectionFactory.CreateConnection()).Return(connection).Repeat.Once();
-
-            mocks.ReplayAll();
-
+            IConnectionFactory connectionFactory = CreateConnectionFactory();
 
             CachingConnectionFactory cachingConnectionFactory = new CachingConnectionFactory();
             cachingConnectionFactory.TargetConnectionFactory = connectionFactory;
             IConnection con1 = cachingConnectionFactory.CreateConnection();
 
             ISession sessionA = con1.CreateSession(AcknowledgementMode.Transactional);
-            IDestination destination = new ActiveMQQueue("test.dest");
+            IDestination destination = new Apache.NMS.ActiveMQ.Commands.ActiveMQQueue("test.dest");
             IMessageConsumer consumerA = sessionA.CreateConsumer(destination);
             TestMessageConsumer tmpA = GetTestMessageConsumer(consumerA);
 
@@ -243,7 +191,16 @@ namespace Spring.Messaging.Nms.Connections
             TestMessageConsumer tmpB = GetTestMessageConsumer(consumerB);
 
             Assert.AreSame(tmpA, tmpB);            
-            mocks.VerifyAll();
+        }
+#endif
+
+        private IConnectionFactory CreateConnectionFactory()
+        {
+            IConnectionFactory connectionFactory = A.Fake<IConnectionFactory>();
+            IConnection connection = new TestConnection();
+
+            A.CallTo(() => connectionFactory.CreateConnection()).Returns(connection).Once();
+            return connectionFactory;
         }
 
         private static TestMessageConsumer GetTestMessageConsumer(IMessageConsumer consumer)

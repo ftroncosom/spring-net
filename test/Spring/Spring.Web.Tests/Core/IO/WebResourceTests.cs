@@ -36,13 +36,13 @@ namespace Spring.Core.IO
     {
         private VirtualEnvironmentMock testVirtualEnvironment;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void SetUpFixture()
         {
             testVirtualEnvironment = new VirtualEnvironmentMock("/some.request", "somepathinfo", null, "/", true);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void ShutDownFixture()
         {
             testVirtualEnvironment.Dispose();

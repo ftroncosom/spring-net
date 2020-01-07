@@ -18,13 +18,11 @@
 
 #endregion
 
-#region Imports
-
 using System;
-using NUnit.Framework;
-using Rhino.Mocks;
 
-#endregion
+using FakeItEasy;
+
+using NUnit.Framework;
 
 namespace Spring.Objects.Factory.Config
 {
@@ -36,27 +34,22 @@ namespace Spring.Objects.Factory.Config
 	[TestFixture]
 	public sealed class ObjectFactoryCreatingFactoryObjectTests
 	{
-        private MockRepository mocks;
-
         [SetUp]
         public void Setup()
         {
-            mocks = new MockRepository();
         }
 
 		[Test]
 		public void SunnyDay()
 		{
 			TestObject dude = new TestObject("Rick Evans", 30);
-		    IObjectFactory objectFactory = (IObjectFactory) mocks.CreateMock(typeof (IObjectFactory));
+		    IObjectFactory objectFactory = A.Fake<IObjectFactory>();
 			const string lookupObjectName = "rick";
-		    Expect.Call(objectFactory.GetObject(lookupObjectName)).Return(dude).Repeat.Twice();
+		    A.CallTo(() => objectFactory.GetObject(lookupObjectName)).Returns(dude).Twice();
 			ObjectFactoryCreatingFactoryObject factory = new ObjectFactoryCreatingFactoryObject();
-		    factory.ObjectFactory = (IObjectFactory) objectFactory;
+		    factory.ObjectFactory = objectFactory;
 			factory.TargetObjectName = lookupObjectName;
 			factory.AfterPropertiesSet();
-
-            mocks.ReplayAll();
 
 			IGenericObjectFactory gof = (IGenericObjectFactory) factory.GetObject();
 			IGenericObjectFactory gofOther = (IGenericObjectFactory) factory.GetObject();
@@ -68,23 +61,21 @@ namespace Spring.Objects.Factory.Config
 			Assert.IsNotNull(two, "Must never return null (IFactoryObject contract).");
 			Assert.IsTrue(Object.ReferenceEquals(one, two),
 			              "Not returning the same instance.");
-			mocks.VerifyAll();
 		}
 
 		[Test]
 		public void PrototypeModeWithSingletonTarget()
 		{
-			TestObject dude = new TestObject("Rick Evans", 30);			
-            IObjectFactory objectFactory = (IObjectFactory)mocks.CreateMock(typeof(IObjectFactory));
-			const string lookupObjectName = "rick";
-            Expect.Call(objectFactory.GetObject(lookupObjectName)).Return(dude).Repeat.Twice();
+			TestObject dude = new TestObject("Rick Evans", 30);
+            IObjectFactory objectFactory = A.Fake<IObjectFactory>();
+            const string lookupObjectName = "rick";
+            A.CallTo(() => objectFactory.GetObject(lookupObjectName)).Returns(dude).Twice();
 			ObjectFactoryCreatingFactoryObject factory = new ObjectFactoryCreatingFactoryObject();
-		    factory.ObjectFactory = (IObjectFactory) objectFactory;
+		    factory.ObjectFactory = objectFactory;
 			factory.TargetObjectName = lookupObjectName;
 			factory.IsSingleton = false;
 			factory.AfterPropertiesSet();
 
-            mocks.ReplayAll();
 			IGenericObjectFactory gofOne = (IGenericObjectFactory) factory.GetObject();
 			IGenericObjectFactory gofTwo = (IGenericObjectFactory) factory.GetObject();
 			Assert.IsFalse(Object.ReferenceEquals(gofOne, gofTwo),
@@ -95,24 +86,20 @@ namespace Spring.Objects.Factory.Config
 			Assert.IsNotNull(two, "Must never return null (IFactoryObject contract).");
 			Assert.IsTrue(Object.ReferenceEquals(one, two),
 				"Not returning the same instance to singleton object.");
-			mocks.VerifyAll();
 		}
 
 		[Test]
-		[ExpectedException(typeof (ArgumentException),
-            ExpectedMessage = "The 'TargetObjectName' property must have a value.")]
 		public void WithMissingObjectName()
 		{
 			ObjectFactoryCreatingFactoryObject factory
 				= new ObjectFactoryCreatingFactoryObject();
-			factory.AfterPropertiesSet();
+            Assert.Throws<ArgumentException>(() => factory.AfterPropertiesSet(), "The 'TargetObjectName' property must have a value.");
 		}
 
 		[Test]
 		public void ObjectTypeReallyIsIGenericObjectFactory()
 		{
-			Assert.AreEqual(typeof (IGenericObjectFactory),
-			                new ObjectFactoryCreatingFactoryObject().ObjectType);
+			Assert.AreEqual(typeof (IGenericObjectFactory), new ObjectFactoryCreatingFactoryObject().ObjectType);
 		}
 	}
 }

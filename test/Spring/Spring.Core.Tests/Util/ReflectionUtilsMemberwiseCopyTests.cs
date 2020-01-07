@@ -1,6 +1,4 @@
 using System;
-using System.Security;
-using System.Security.Permissions;
 using System.Threading;
 using System.Web;
 using NUnit.Framework;
@@ -25,10 +23,9 @@ namespace Spring.Util
 		}
 
 		[Test]
-		[ExpectedException(typeof (ArgumentException), ExpectedMessage="object types are not related")]
 		public void DifferentTypesForbidden()
 		{
-			ReflectionUtils.MemberwiseCopy("test", 2);
+            Assert.Throws<ArgumentException>(() => ReflectionUtils.MemberwiseCopy("test", 2), "object types are not related");
 		}
 
 		[Test]
@@ -53,6 +50,7 @@ namespace Spring.Util
 			Assert.AreEqual(i1, i2);
 		}
 
+#if !NETCOREAPP
 		[Test]
 		public void MediumTrustAllowsCopyingBetweenTypesFromSameModule()
 		{
@@ -74,6 +72,7 @@ namespace Spring.Util
             SecurityTemplate.MediumTrustInvoke(new ThreadStart(new CopyCommand(e2, e1).Execute));
 			Assert.AreEqual(e1.Message, e2.Message);
 		}
+#endif
 
         class CopyCommand
         {

@@ -1,5 +1,3 @@
-#region License
-
 /*
  * Copyright © 2002-2011 the original author or authors.
  *
@@ -16,17 +14,10 @@
  * limitations under the License.
  */
 
-#endregion
-
-#region Imports
-
 using System;
 
-using Spring.Core;
 using Spring.Core.TypeResolution;
 using Spring.Util;
-
-#endregion
 
 namespace Spring.Objects.Factory.Support
 {
@@ -45,9 +36,7 @@ namespace Spring.Objects.Factory.Support
     [Serializable]
     public class DefaultObjectDefinitionFactory : IObjectDefinitionFactory
 	{
-	    #region IObjectDefinitionFactory Members
-
-        /// <summary>
+	    /// <summary>
         /// Factory style method for getting concrete
         /// <see cref="IConfigurableObjectDefinition"/>
         /// instances.
@@ -105,9 +94,5 @@ namespace Spring.Objects.Factory.Support
                 }
             }
 	    }
-
-	    #endregion
-
-
 	}
 }

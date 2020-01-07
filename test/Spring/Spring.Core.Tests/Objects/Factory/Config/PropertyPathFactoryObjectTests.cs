@@ -1,7 +1,7 @@
 #region License
 
 /*
- * Copyright © 2002-2011 the original author or authors.
+ * Copyright ï¿½ 2002-2011 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,14 +18,12 @@
 
 #endregion
 
-#region Imports
-
 using System;
-using NUnit.Framework;
-using Rhino.Mocks;
-using Spring.Core;
 
-#endregion
+using FakeItEasy;
+using NUnit.Framework;
+
+using Spring.Core;
 
 namespace Spring.Objects.Factory.Config
 {
@@ -36,22 +34,19 @@ namespace Spring.Objects.Factory.Config
 	[TestFixture]
 	public sealed class PropertyPathFactoryObjectTests
 	{
-	    private MockRepository mocks;
 	    private IObjectFactory mockFactory;
 
         [SetUp]
         public void SetUp()
         {
-            mocks = new MockRepository();
-            mockFactory = (IObjectFactory) mocks.CreateMock(typeof (IObjectFactory));
+            mockFactory = A.Fake<IObjectFactory>();
         }
 
 		[Test]
 		public void GetObject_ViaTargetObjectName()
 		{
-			Expect.Call(mockFactory.IsSingleton("foo")).Return(true);
-			Expect.Call(mockFactory.GetObject("foo")).Return(new TestObject("Fiona Apple", 28));
-            mocks.ReplayAll();
+			A.CallTo(() => mockFactory.IsSingleton("foo")).Returns(true);
+			A.CallTo(() => mockFactory.GetObject("foo")).Returns(new TestObject("Fiona Apple", 28));
 
 			PropertyPathFactoryObject fac = new PropertyPathFactoryObject();
 			fac.TargetObjectName = "foo";
@@ -59,17 +54,15 @@ namespace Spring.Objects.Factory.Config
 			fac.ObjectFactory = mockFactory;
 			string name = (string) fac.GetObject();
 			Assert.AreEqual("Fiona Apple", name);
-			mocks.VerifyAll();
 		}
 
 		[Test]
 		public void GetObject_ViaTargetObjectNameWithNestedPropertyPath()
 		{
-			Expect.Call(mockFactory.IsSingleton("foo")).Return(true);
+			A.CallTo(() => mockFactory.IsSingleton("foo")).Returns(true);
 			TestObject target = new TestObject("Fiona Apple", 28);
-			target.Spouse = target; 
-			Expect.Call(mockFactory.GetObject("foo")).Return(target);
-            mocks.ReplayAll();
+			target.Spouse = target;
+			A.CallTo(() => mockFactory.GetObject("foo")).Returns(target);
 
 			PropertyPathFactoryObject fac = new PropertyPathFactoryObject();
 			fac.TargetObjectName = "foo";
@@ -77,97 +70,81 @@ namespace Spring.Objects.Factory.Config
 			fac.ObjectFactory = mockFactory;
 			string name = (string) fac.GetObject();
 			Assert.AreEqual("Fiona Apple", name);
-			mocks.VerifyAll();
 		}
 
 		[Test]
 		public void GetObject_ViaObjectName()
 		{
-			Expect.Call(mockFactory.IsSingleton("foo")).Return(true);
-			Expect.Call(mockFactory.GetObject("foo")).Return(new TestObject("Fiona Apple", 28));
-            mocks.ReplayAll();
+			A.CallTo(() => mockFactory.GetObject("foo")).Returns(new TestObject("Fiona Apple", 28));
+			A.CallTo(() => mockFactory.IsSingleton("foo")).Returns(true);
 
 			PropertyPathFactoryObject fac = new PropertyPathFactoryObject();
 			fac.ObjectName = "foo.name";
 			fac.ObjectFactory = mockFactory;
 			string name = (string) fac.GetObject();
 			Assert.AreEqual("Fiona Apple", name);
-			mocks.VerifyAll();
 		}
 
 		[Test]
-		[ExpectedException(typeof(ArgumentException))]
 		public void GetObject_ViaObjectNameThatStartsWithAPeriod()
 		{
-			Expect.Call(mockFactory.IsSingleton("foo")).Return(true);
-			Expect.Call(mockFactory.GetObject("foo")).Return(new TestObject("Fiona Apple", 28));
-            mocks.ReplayAll();
+			A.CallTo(() => mockFactory.IsSingleton("foo")).Returns(true);
+			A.CallTo(() => mockFactory.GetObject("foo")).Returns(new TestObject("Fiona Apple", 28));
 
 			PropertyPathFactoryObject fac = new PropertyPathFactoryObject();
 			fac.ObjectName = ".foo.name";
-			fac.ObjectFactory = mockFactory;
+            Assert.Throws<ArgumentException>(() => fac.ObjectFactory = mockFactory);
 		}
 
 		[Test]
 		public void GetObject_MakeSureLeadingAndTrailingWhitspaceIsTrimmed()
 		{
-			Expect.Call(mockFactory.IsSingleton("foo")).Return(true);
-			Expect.Call(mockFactory.GetObject("foo")).Return(new TestObject("Fiona Apple", 28));
-            mocks.ReplayAll();
+			A.CallTo(() => mockFactory.IsSingleton("foo")).Returns(true);
+			A.CallTo(() => mockFactory.GetObject("foo")).Returns(new TestObject("Fiona Apple", 28));
 
 			PropertyPathFactoryObject fac = new PropertyPathFactoryObject();
 			fac.ObjectName = "   \nfoo.name  ";
 			fac.ObjectFactory = mockFactory;
 			string name = (string) fac.GetObject();
 			Assert.AreEqual("Fiona Apple", name);
-			mocks.VerifyAll();
 		}
 
 		[Test]
 		public void GetObject_ViaObjectNameWithNestedPropertyPath()
 		{
-			Expect.Call(mockFactory.IsSingleton("foo")).Return(true);
+			A.CallTo(() => mockFactory.IsSingleton("foo")).Returns(true);
 			TestObject target = new TestObject("Fiona Apple", 28);
-			target.Spouse = target; 
-			Expect.Call(mockFactory.GetObject("foo")).Return(target);
-            mocks.ReplayAll();
+			target.Spouse = target;
+			A.CallTo(() => mockFactory.GetObject("foo")).Returns(target);
 
 			PropertyPathFactoryObject fac = new PropertyPathFactoryObject();
 			fac.ObjectName = "foo.spouse.name";
 			fac.ObjectFactory = mockFactory;
 			string name = (string) fac.GetObject();
 			Assert.AreEqual("Fiona Apple", name);
-			mocks.VerifyAll();
 		}
 
 		[Test]
-		[ExpectedException(typeof(NullValueInNestedPathException))]
 		public void GetObject_ViaObjectNameWithNullInNestedPropertyPath()
 		{
-            Expect.Call(mockFactory.IsSingleton("foo")).Return(true);
-            Expect.Call(mockFactory.GetObject("foo")).Return(new TestObject("Fiona Apple", 28));
-            mocks.ReplayAll();
+            A.CallTo(() => mockFactory.IsSingleton("foo")).Returns(true);
+            A.CallTo(() => mockFactory.GetObject("foo")).Returns(new TestObject("Fiona Apple", 28));
 
 			PropertyPathFactoryObject fac = new PropertyPathFactoryObject();
 			fac.ObjectName = "foo.spouse.name";
-			fac.ObjectFactory = mockFactory;
-			string name = (string) fac.GetObject();
-			Assert.AreEqual("Fiona Apple", name);
-			mocks.VerifyAll();
+            Assert.Throws<NullValueInNestedPathException>(() => fac.ObjectFactory = mockFactory);
 		}
 
 		[Test]
-		[ExpectedException(typeof(FatalObjectException))]
 		public void GetObject_PropertyPathEvaluatesToNull()
 		{
-            Expect.Call(mockFactory.IsSingleton("foo")).Return(true);
-            Expect.Call(mockFactory.GetObject("foo")).Return(new TestObject(null, 28));
-            mocks.ReplayAll();
+            A.CallTo(() => mockFactory.IsSingleton("foo")).Returns(true);
+            A.CallTo(() => mockFactory.GetObject("foo")).Returns(new TestObject(null, 28));
 
 			PropertyPathFactoryObject fac = new PropertyPathFactoryObject();
 			fac.ObjectName = "foo.name";
 			fac.ObjectFactory = mockFactory;
-			fac.GetObject();
+            Assert.Throws<FatalObjectException>(() => fac.GetObject());
 		}
 	}
 }

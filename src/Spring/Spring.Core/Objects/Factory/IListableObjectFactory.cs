@@ -1,7 +1,7 @@
 #region License
 
 /*
- * Copyright © 2002-2011 the original author or authors.
+ * Copyright Â© 2002-2011 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@
 #region Imports
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 
 #endregion
@@ -94,7 +93,18 @@ namespace Spring.Objects.Factory
 	    /// The names of all objects defined in this factory, or an empty array if none
 	    /// are defined.
 	    /// </returns>
-	    IList<string> GetObjectDefinitionNames();
+	    IReadOnlyList<string> GetObjectDefinitionNames();
+
+        /// <summary>
+        /// Return the names of all objects defined in this factory, if <code>includeAncestors</code> is <code>true</code>
+        /// includes all parent factories.
+        /// </summary>
+        /// <param name="includeAncestors">to include parent factories in result</param>
+        /// <returns>
+        /// The names of all objects defined in this factory, if <code>includeAncestors</code> is <code>true</code> includes all 
+        /// objects defined in parent factories, or an empty array if none are defined.
+        /// </returns>
+        IReadOnlyList<string> GetObjectDefinitionNames(bool includeAncestors);
 
 	    /// <summary>
 	    /// Return the names of objects matching the given <see cref="System.Type"/>
@@ -119,8 +129,7 @@ namespace Spring.Objects.Factory
 	    /// The names of all objects defined in this factory, or an empty array if none
 	    /// are defined.
 	    /// </returns>
-	    IList<string> GetObjectNamesForType(Type type);
-
+	    IReadOnlyList<string> GetObjectNamesForType(Type type);
 
 	    /// <summary>
 	    /// Return the names of objects matching the given <see cref="System.Type"/>
@@ -145,8 +154,7 @@ namespace Spring.Objects.Factory
 	    /// The names of all objects defined in this factory, or an empty array if none
 	    /// are defined.
 	    /// </returns>
-	    IList<string> GetObjectNames<T>();
-
+	    IReadOnlyList<string> GetObjectNames<T>();
 
 	    /// <summary>
 	    /// Return the names of objects matching the given <see cref="System.Type"/>
@@ -183,44 +191,44 @@ namespace Spring.Objects.Factory
 	    /// The names of all objects defined in this factory, or an empty array if none
 	    /// are defined.
 	    /// </returns>
-	    IList<string> GetObjectNamesForType(Type type, bool includePrototypes, bool includeFactoryObjects);
+	    IReadOnlyList<string> GetObjectNamesForType(Type type, bool includePrototypes, bool includeFactoryObjects);
 
-	    /// <summary>
-	    /// Return the names of objects matching the given <see cref="System.Type"/>
-	    /// (including subclasses), judging from the object definitions.
-	    /// </summary>
-	    /// <remarks>
-	    /// <p>
-	    /// Does consider objects created by <see cref="Spring.Objects.Factory.IFactoryObject"/>s,
-	    /// or rather it considers the type of objects created by
-	    /// <see cref="Spring.Objects.Factory.IFactoryObject"/> (which means that
-	    /// <see cref="Spring.Objects.Factory.IFactoryObject"/>s will be instantiated).
-	    /// </p>
-	    /// <p>
-	    /// Does not consider any hierarchy this factory may participate in.
-	    /// Use <see cref="ObjectFactoryUtils.ObjectNamesForTypeIncludingAncestors(Spring.Objects.Factory.IListableObjectFactory,System.Type,bool,bool)"/>
-	    /// to include beans in ancestor factories too.
-	    /// &lt;p&gt;Note: Does &lt;i&gt;not&lt;/i&gt; ignore singleton objects that have been registered
-	    /// by other means than bean definitions.
-	    /// </p>
-	    /// </remarks>
-	    /// <typeparam name="T">
-	    /// The <see cref="System.Type"/> (class or interface) to match, or <see langword="null"/>
-	    /// for all object names.
-	    /// </typeparam>
-	    /// <param name="includePrototypes">
-	    /// Whether to include prototype objects too or just singletons (also applies to
-	    /// <see cref="Spring.Objects.Factory.IFactoryObject"/>s).
-	    /// </param>
-	    /// <param name="includeFactoryObjects">
-	    /// Whether to include <see cref="Spring.Objects.Factory.IFactoryObject"/>s too
-	    /// or just normal objects.
-	    /// </param>
-	    /// <returns>
-	    /// The names of all objects defined in this factory, or an empty array if none
-	    /// are defined.
-	    /// </returns>
-	    IList<string> GetObjectNames<T>(bool includePrototypes, bool includeFactoryObjects);
+		/// <summary>
+		/// Return the names of objects matching the given <see cref="System.Type"/>
+		/// (including subclasses), judging from the object definitions.
+		/// </summary>
+		/// <remarks>
+		/// <p>
+		/// Does consider objects created by <see cref="Spring.Objects.Factory.IFactoryObject"/>s,
+		/// or rather it considers the type of objects created by
+		/// <see cref="Spring.Objects.Factory.IFactoryObject"/> (which means that
+		/// <see cref="Spring.Objects.Factory.IFactoryObject"/>s will be instantiated).
+		/// </p>
+		/// <p>
+		/// Does not consider any hierarchy this factory may participate in.
+		/// Use <see cref="ObjectFactoryUtils.ObjectNamesForTypeIncludingAncestors(Spring.Objects.Factory.IListableObjectFactory,System.Type,bool,bool)"/>
+		/// to include beans in ancestor factories too.
+		/// &lt;p&gt;Note: Does &lt;i&gt;not&lt;/i&gt; ignore singleton objects that have been registered
+		/// by other means than bean definitions.
+		/// </p>
+		/// </remarks>
+		/// <typeparam name="T">
+		/// The <see cref="System.Type"/> (class or interface) to match, or <see langword="null"/>
+		/// for all object names.
+		/// </typeparam>
+		/// <param name="includePrototypes">
+		///     Whether to include prototype objects too or just singletons (also applies to
+		///     <see cref="Spring.Objects.Factory.IFactoryObject"/>s).
+		/// </param>
+		/// <param name="includeFactoryObjects">
+		///     Whether to include <see cref="Spring.Objects.Factory.IFactoryObject"/>s too
+		///     or just normal objects.
+		/// </param>
+		/// <returns>
+		/// The names of all objects defined in this factory, or an empty array if none
+		/// are defined.
+		/// </returns>
+		IReadOnlyList<string> GetObjectNames<T>(bool includePrototypes, bool includeFactoryObjects);
 
 		/// <summary>
 		/// Return the object instances that match the given object
@@ -249,7 +257,7 @@ namespace Spring.Objects.Factory
 		/// <exception cref="Spring.Objects.ObjectsException">
 		/// If the objects could not be created.
 		/// </exception>
-		IDictionary<string, object> GetObjectsOfType(Type type);
+		IReadOnlyDictionary<string, object> GetObjectsOfType(Type type);
 		
         /// <summary>
 		/// Return the object instances that match the given object
@@ -278,7 +286,7 @@ namespace Spring.Objects.Factory
 		/// <exception cref="Spring.Objects.ObjectsException">
 		/// If the objects could not be created.
 		/// </exception>
-		IDictionary<string, T> GetObjects<T>();
+        IReadOnlyDictionary<string, T> GetObjects<T>();
 
 		/// <summary>
 		/// Return the object instances that match the given object
@@ -306,7 +314,7 @@ namespace Spring.Objects.Factory
 		/// <exception cref="Spring.Objects.ObjectsException">
 		/// If the objects could not be created.
 		/// </exception>
-		IDictionary<string, object> GetObjectsOfType(Type type, bool includePrototypes, bool includeFactoryObjects);
+		IReadOnlyDictionary<string, object> GetObjectsOfType(Type type, bool includePrototypes, bool includeFactoryObjects);
 
 	    /// <summary>
 	    /// Return the object instances that match the given object
@@ -334,37 +342,6 @@ namespace Spring.Objects.Factory
 	    /// <exception cref="Spring.Objects.ObjectsException">
 	    /// If the objects could not be created.
 	    /// </exception>
-	    IDictionary<string, T> GetObjects<T>(bool includePrototypes, bool includeFactoryObjects);
-
-        /// <summary>
-        /// Return an instance (possibly shared or independent) of the given object name.
-        /// </summary>
-        /// <remarks>
-        /// <para>
-        /// This method allows an object factory to be used as a replacement for the
-        /// Singleton or Prototype design pattern.
-        /// </para>
-        /// <para>
-        /// Note that callers should retain references to returned objects. There is no
-        /// guarantee that this method will be implemented to be efficient. For example,
-        /// it may be synchronized, or may need to run an RDBMS query.
-        /// </para>
-        /// <para>
-        /// Will ask the parent factory if the object cannot be found in this factory
-        /// instance.
-        /// </para>
-        /// </remarks>
-        /// <typeparam name="T">The type of the object to return.</typeparam>
-        /// <returns>The instance of the object.</returns>
-        /// <exception cref="Spring.Objects.Factory.NoSuchObjectDefinitionException">
-        /// If there's no such object definition.
-        /// </exception>
-        /// <exception cref="Spring.Objects.Factory.ObjectDefinitionStoreException">
-        /// If there is more than a single object of the requested type defined in the factory.
-        /// </exception>
-        /// <exception cref="Spring.Objects.ObjectsException">
-        /// If the object could not be created.
-        /// </exception>
-        T GetObject<T>();
+	    IReadOnlyDictionary<string, T> GetObjects<T>(bool includePrototypes, bool includeFactoryObjects);
 	}
 }
